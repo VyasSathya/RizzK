@@ -1,38 +1,31 @@
 /**
  * RizzK Mobile App
- * Entry point
+ * Entry point with navigation
  */
 
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, ActivityIndicator } from 'react-native';
-import { useEffect, useState } from 'react';
-import * as Font from 'expo-font';
+import React, { useEffect, useState } from 'react';
+import { View, ActivityIndicator, StyleSheet } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { colors } from './src/theme';
+import { LandingScreen, SignUpScreen, LoginScreen } from './src/screens';
+
+type Screen = 'landing' | 'signup' | 'login' | 'main';
 
 export default function App() {
-  const [fontsLoaded, setFontsLoaded] = useState(false);
+  const [isReady, setIsReady] = useState(false);
+  const [currentScreen, setCurrentScreen] = useState<Screen>('landing');
 
   useEffect(() => {
-    async function loadFonts() {
-      try {
-        // TODO: Add actual font files to assets/fonts/
-        // await Font.loadAsync({
-        //   'Cinzel-Bold': require('./assets/fonts/Cinzel-Bold.ttf'),
-        //   'Raleway-Regular': require('./assets/fonts/Raleway-Regular.ttf'),
-        // });
-
-        // For now, just mark as loaded (will use system fonts)
-        setFontsLoaded(true);
-      } catch (error) {
-        console.error('Error loading fonts:', error);
-        setFontsLoaded(true); // Continue anyway with system fonts
-      }
-    }
-
-    loadFonts();
+    // Initialize app
+    const init = async () => {
+      // TODO: Load fonts, check auth state, etc.
+      await new Promise(resolve => setTimeout(resolve, 500));
+      setIsReady(true);
+    };
+    init();
   }, []);
 
-  if (!fontsLoaded) {
+  if (!isReady) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={colors.primary} />
@@ -40,46 +33,63 @@ export default function App() {
     );
   }
 
+  const renderScreen = () => {
+    switch (currentScreen) {
+      case 'landing':
+        return (
+          <LandingScreen
+            onGetStarted={() => setCurrentScreen('signup')}
+            onLogin={() => setCurrentScreen('login')}
+          />
+        );
+      case 'signup':
+        return (
+          <SignUpScreen
+            onContinue={(data) => {
+              console.log('Sign up data:', data);
+              // TODO: Navigate to photo upload
+              setCurrentScreen('landing');
+            }}
+            onBack={() => setCurrentScreen('landing')}
+          />
+        );
+      case 'login':
+        return (
+          <LoginScreen
+            onLogin={(email, password) => {
+              console.log('Login:', email);
+              // TODO: Navigate to main app
+              setCurrentScreen('landing');
+            }}
+            onBack={() => setCurrentScreen('landing')}
+          />
+        );
+      default:
+        return (
+          <LandingScreen
+            onGetStarted={() => setCurrentScreen('signup')}
+            onLogin={() => setCurrentScreen('login')}
+          />
+        );
+    }
+  };
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>RizzK</Text>
-      <Text style={styles.subtitle}>Take the Rizk. Meet through games, not swipes.</Text>
-      <Text style={styles.status}>✅ Project initialized successfully!</Text>
-      <StatusBar style="light" />
-    </View>
+    <GestureHandlerRootView style={styles.container}>
+      {renderScreen()}
+    </GestureHandlerRootView>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
   loadingContainer: {
     flex: 1,
     backgroundColor: colors.background,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 20,
-  },
-  title: {
-    fontSize: 48,
-    fontWeight: '900',
-    color: colors.primary,
-    marginBottom: 10,
-    letterSpacing: 2,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: colors.text,
-    textAlign: 'center',
-    marginBottom: 40,
-  },
-  status: {
-    fontSize: 14,
-    color: colors.success,
-    marginTop: 20,
   },
 });
