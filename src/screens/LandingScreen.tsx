@@ -16,7 +16,7 @@ import Animated, {
   FadeInUp,
 } from '../shims/reanimated';
 import { GradientBackground, Button, Card, LogoWithTagline, Icon } from '../components/common';
-import { colors, spacing } from '../theme';
+import { colors, spacing, borderRadius, shadows } from '../theme';
 
 interface LandingScreenProps {
   onGetStarted: () => void;
@@ -33,7 +33,7 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({
       <SafeAreaView style={styles.container}>
         <View style={styles.content}>
           {/* Logo */}
-          <Animated.View 
+          <Animated.View
             entering={FadeInDown.delay(200).duration(800)}
             style={styles.header}
           >
@@ -43,9 +43,11 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({
           {/* Main Card */}
           <Animated.View entering={FadeInUp.delay(400).duration(800)}>
             <Card variant="elevated" style={styles.mainCard}>
-              {/* Icon */}
+              {/* Icon with glow */}
               <View style={styles.iconContainer}>
-                <Icon name="zap" size={80} color={colors.primary} />
+                <View style={styles.iconGlow}>
+                  <Icon name="zap" size={80} color={colors.primary} />
+                </View>
               </View>
 
               {/* Headline */}
@@ -103,11 +105,14 @@ const styles = StyleSheet.create({
   },
   mainCard: {
     alignItems: 'center',
-    paddingVertical: 40,
-    paddingHorizontal: spacing.xl,
+    paddingVertical: 50,
+    paddingHorizontal: 30,
   },
   iconContainer: {
-    marginBottom: 20,
+    marginBottom: 30,
+  },
+  iconGlow: {
+    ...shadows.glowIntense,
   },
   headline: {
     fontSize: 28,
@@ -115,13 +120,13 @@ const styles = StyleSheet.create({
     color: colors.text,
     textAlign: 'center',
     marginBottom: 20,
-    letterSpacing: 1,
+    letterSpacing: 0.5,
+    lineHeight: 38,
   },
   subtext: {
     fontSize: 18,
-    color: colors.text,
+    color: colors.textSecondary,
     textAlign: 'center',
-    opacity: 0.8,
     lineHeight: 28,
   },
   buttonContainer: {
@@ -129,7 +134,7 @@ const styles = StyleSheet.create({
     paddingTop: spacing.xxl,
   },
   secondaryButton: {
-    marginTop: spacing.md,
+    marginTop: spacing.lg,
   },
 });
 

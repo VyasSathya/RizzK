@@ -1,9 +1,8 @@
-/**
+﻿/**
  * RizzK Theme
  * Central export for all theme values
  */
 
-export { colors } from './colors';
+export { colors, gradients } from './colors';
 export { fonts, fontWeights } from './fonts';
-export { spacing, borderRadius } from './spacing';
-
+export { spacing, borderRadius, shadows } from './spacing';

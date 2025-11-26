@@ -3,7 +3,7 @@
  * Players choose to do a dare or take a drink
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -12,9 +12,10 @@ import {
   StatusBar,
 } from 'react-native';
 import Animated, { FadeIn, SlideInRight, FadeInDown } from '../../shims/reanimated';
-import { GradientBackground, Button, Card, Avatar } from '../../components/common';
+import { LinearGradient } from 'expo-linear-gradient';
+import { GradientBackground, Button, Card, Avatar, Icon } from '../../components/common';
 import { GameHeader } from '../../components/games';
-import { colors, spacing } from '../../theme';
+import { colors, spacing, borderRadius } from '../../theme';
 import { HapticService } from '../../services/haptics';
 
 interface DareOrDrinkScreenProps {
@@ -36,7 +37,7 @@ const DARES = [
 ];
 
 const PLAYERS = [
-  { name: 'You' },
+  { name: 'You', gender: 'male' as const },
   { name: 'Maya', gender: 'female' as const },
   { name: 'Alex', gender: 'male' as const },
   { name: 'Sam', gender: 'male' as const },
@@ -95,16 +96,27 @@ export const DareOrDrinkScreen: React.FC<DareOrDrinkScreenProps> = ({
 
           {/* Current Player */}
           <Animated.View entering={FadeIn.duration(400)} style={styles.playerSection}>
-            <Avatar name={currentPlayer.name} size={60} gender={currentPlayer.gender} />
+            <View style={styles.avatarGlow}>
+              <Avatar name={currentPlayer.name} size={80} gender={currentPlayer.gender} />
+            </View>
             <Text style={styles.playerName}>{currentPlayer.name}'s Turn</Text>
+            <Text style={styles.playerSubtitle}>Choose wisely...</Text>
           </Animated.View>
 
           {/* Dare Card */}
-          <Animated.View key={\\-\\} entering={SlideInRight.duration(400)}>
-            <Card variant="elevated" style={styles.dareCard}>
+          <Animated.View key={currentRound + '-' + currentPlayerIndex} entering={SlideInRight.duration(400)}>
+            <LinearGradient
+              colors={['rgba(255, 20, 147, 0.15)', 'rgba(255, 20, 147, 0.05)']}
+              style={styles.dareCard}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            >
+              <View style={styles.dareIconContainer}>
+                <Icon name="zap" size={24} color={colors.primary} />
+              </View>
               <Text style={styles.dareLabel}>THE DARE</Text>
               <Text style={styles.dareText}>{currentDare}</Text>
-            </Card>
+            </LinearGradient>
           </Animated.View>
 
           {/* Choice Buttons */}
@@ -118,6 +130,9 @@ export const DareOrDrinkScreen: React.FC<DareOrDrinkScreenProps> = ({
           {/* Result */}
           {showResult && (
             <Animated.View entering={FadeInDown.duration(400)} style={styles.resultContainer}>
+              <View style={styles.resultIconContainer}>
+                <Icon name={choice === 'dare' ? 'zap' : 'coffee'} size={40} color={colors.primary} />
+              </View>
               <Text style={styles.resultText}>
                 {choice === 'dare' ? 'Doing the dare!' : 'Taking a drink!'}
               </Text>
@@ -135,15 +150,48 @@ export const DareOrDrinkScreen: React.FC<DareOrDrinkScreenProps> = ({
 const styles = StyleSheet.create({
   container: { flex: 1 },
   content: { flex: 1, padding: spacing.xl, paddingTop: 40 },
-  playerSection: { alignItems: 'center', marginBottom: 20 },
-  playerName: { fontSize: 22, fontWeight: '700', color: colors.text, marginTop: 10 },
-  dareCard: { paddingVertical: 40, alignItems: 'center', marginBottom: 25 },
-  dareLabel: { fontSize: 12, color: colors.primary, fontWeight: '600', letterSpacing: 2, marginBottom: 15 },
-  dareText: { fontSize: 20, fontWeight: '600', color: colors.text, textAlign: 'center', lineHeight: 30 },
+  playerSection: { alignItems: 'center', marginBottom: 25 },
+  avatarGlow: { 
+    shadowColor: colors.primary, 
+    shadowOffset: { width: 0, height: 0 }, 
+    shadowOpacity: 0.8, 
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  playerName: { fontSize: 26, fontWeight: '700', color: colors.text, marginTop: 15, letterSpacing: 1 },
+  playerSubtitle: { fontSize: 14, color: colors.textSecondary, marginTop: 5 },
+  dareCard: { 
+    borderRadius: borderRadius.xl,
+    borderWidth: 1,
+    borderColor: colors.cardBorder,
+    paddingVertical: 35, 
+    paddingHorizontal: 25,
+    alignItems: 'center', 
+    marginBottom: 25,
+  },
+  dareIconContainer: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: 'rgba(255, 20, 147, 0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 15,
+  },
+  dareLabel: { fontSize: 12, color: colors.primary, fontWeight: '700', letterSpacing: 3, marginBottom: 15 },
+  dareText: { fontSize: 20, fontWeight: '600', color: colors.text, textAlign: 'center', lineHeight: 32 },
   choiceButtons: { gap: 15, marginBottom: 25 },
   choiceButton: { width: '100%' },
   resultContainer: { alignItems: 'center', gap: 20 },
-  resultText: { fontSize: 24, fontWeight: '700', color: colors.primary },
+  resultIconContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: 'rgba(255, 20, 147, 0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  resultText: { fontSize: 24, fontWeight: '700', color: colors.primary, letterSpacing: 1 },
   backButton: { marginTop: 'auto' },
 });
 

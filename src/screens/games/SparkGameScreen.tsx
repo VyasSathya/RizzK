@@ -11,10 +11,11 @@ import {
   SafeAreaView,
   StatusBar,
 } from 'react-native';
-import Animated, { FadeIn, FadeInUp, SlideInRight, SlideOutLeft } from '../../shims/reanimated';
-import { GradientBackground, Button, Card, Avatar } from '../../components/common';
+import Animated, { FadeIn, SlideInRight } from '../../shims/reanimated';
+import { LinearGradient } from 'expo-linear-gradient';
+import { GradientBackground, Button, Card, Avatar, Icon } from '../../components/common';
 import { GameHeader } from '../../components/games';
-import { colors, spacing, borderRadius } from '../../theme';
+import { colors, spacing, borderRadius, shadows } from '../../theme';
 import { HapticService } from '../../services/haptics';
 
 interface SparkGameScreenProps {
@@ -36,7 +37,7 @@ const QUESTIONS = [
 ];
 
 const PLAYERS = [
-  { name: 'You' },
+  { name: 'You', gender: 'male' as const },
   { name: 'Maya', gender: 'female' as const },
   { name: 'Alex', gender: 'male' as const },
   { name: 'Sam', gender: 'male' as const },
@@ -107,19 +108,29 @@ export const SparkGameScreen: React.FC<SparkGameScreenProps> = ({
 
           {/* Current Player */}
           <Animated.View entering={FadeIn.duration(400)} style={styles.playerSection}>
-            <Text style={styles.playerLabel}>Now answering:</Text>
+            <Text style={styles.playerLabel}>NOW ANSWERING</Text>
             <View style={styles.playerInfo}>
-              <Avatar name={currentPlayer.name} size={50} gender={currentPlayer.gender} />
+              <View style={styles.avatarGlow}>
+                <Avatar name={currentPlayer.name} size={60} gender={currentPlayer.gender} />
+              </View>
               <Text style={styles.playerName}>{currentPlayer.name}</Text>
             </View>
           </Animated.View>
 
           {/* Question Card */}
           <Animated.View key={currentQuestion} entering={SlideInRight.duration(400)}>
-            <Card variant="elevated" style={styles.questionCard}>
-              <Text style={styles.questionLabel}>Question</Text>
+            <LinearGradient
+              colors={['rgba(255, 20, 147, 0.15)', 'rgba(255, 20, 147, 0.05)']}
+              style={styles.questionCard}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            >
+              <View style={styles.questionIconContainer}>
+                <Icon name="zap" size={24} color={colors.primary} />
+              </View>
+              <Text style={styles.questionLabel}>QUESTION</Text>
               <Text style={styles.question}>{currentQuestion}</Text>
-            </Card>
+            </LinearGradient>
           </Animated.View>
 
           {/* Action Buttons */}
@@ -128,12 +139,14 @@ export const SparkGameScreen: React.FC<SparkGameScreenProps> = ({
               title={currentPlayerIndex < PLAYERS.length - 1 ? 'Next Person' : 'Next Round'}
               onPress={currentPlayerIndex < PLAYERS.length - 1 ? handleNextPlayer : handleNextRound}
               variant="primary"
+              size="large"
               haptic="medium"
             />
             <Button
               title="Back to Games"
               onPress={onBack}
               variant="secondary"
+              size="large"
               style={styles.backButton}
             />
           </View>
@@ -146,15 +159,50 @@ export const SparkGameScreen: React.FC<SparkGameScreenProps> = ({
 const styles = StyleSheet.create({
   container: { flex: 1 },
   content: { flex: 1, padding: spacing.xl, paddingTop: 40 },
-  playerSection: { alignItems: 'center', marginBottom: 25 },
-  playerLabel: { fontSize: 14, color: colors.textSecondary, marginBottom: 10 },
-  playerInfo: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  playerName: { fontSize: 24, fontWeight: '700', color: colors.text },
-  questionCard: { paddingVertical: 40, alignItems: 'center' },
-  questionLabel: { fontSize: 12, color: colors.primary, fontWeight: '600', letterSpacing: 2, marginBottom: 15 },
-  question: { fontSize: 22, fontWeight: '600', color: colors.text, textAlign: 'center', lineHeight: 32 },
+  playerSection: { alignItems: 'center', marginBottom: 30 },
+  playerLabel: { 
+    fontSize: 12, 
+    color: colors.textTertiary, 
+    letterSpacing: 3,
+    marginBottom: 15,
+  },
+  playerInfo: { alignItems: 'center', gap: 12 },
+  avatarGlow: { ...shadows.glowIntense },
+  playerName: { fontSize: 26, fontWeight: '700', color: colors.text, letterSpacing: 1 },
+  questionCard: { 
+    paddingVertical: 40, 
+    paddingHorizontal: 25,
+    alignItems: 'center',
+    borderRadius: borderRadius.xl,
+    borderWidth: 1,
+    borderColor: colors.cardBorder,
+    ...shadows.card,
+  },
+  questionIconContainer: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: 'rgba(255, 20, 147, 0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 15,
+  },
+  questionLabel: { 
+    fontSize: 12, 
+    color: colors.primary, 
+    fontWeight: '700', 
+    letterSpacing: 3, 
+    marginBottom: 15,
+  },
+  question: { 
+    fontSize: 22, 
+    fontWeight: '600', 
+    color: colors.text, 
+    textAlign: 'center', 
+    lineHeight: 34,
+  },
   buttonContainer: { marginTop: 'auto', paddingTop: spacing.xl },
-  backButton: { marginTop: spacing.md },
+  backButton: { marginTop: spacing.lg },
 });
 
 export default SparkGameScreen;

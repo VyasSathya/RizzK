@@ -1,6 +1,6 @@
 ﻿/**
  * OnboardingScreen - 3-slide onboarding flow
- * Matches the HTML prototype onboarding screens
+ * Matches the HTML prototype onboarding screens exactly
  */
 
 import React, { useState, useRef } from 'react';
@@ -14,8 +14,9 @@ import {
   StatusBar,
 } from 'react-native';
 import Animated, { FadeIn, FadeInDown } from '../shims/reanimated';
+import { LinearGradient } from 'expo-linear-gradient';
 import { GradientBackground, Button, Card, Icon } from '../components/common';
-import { colors, spacing, borderRadius } from '../theme';
+import { colors, spacing, borderRadius, shadows } from '../theme';
 import { HapticService } from '../services/haptics';
 
 const { width } = Dimensions.get('window');
@@ -28,16 +29,17 @@ interface OnboardingScreenProps {
 const SLIDES = [
   {
     id: '1',
-    iconName: 'play' as const,
-    title: 'Dating, Reimagined',
-    subtitle: 'Forget swiping. Meet people through fun, interactive game nights with personality-matched groups.',
+    iconName: 'users' as const,
+    title: 'Meet Through Games,\nNot Swipes',
+    subtitle: 'Tired of endless swiping? Join personality-matched game nights where you actually connect with people through fun, flirty games.',
   },
   {
     id: '2',
+    iconName: 'zap' as const,
     title: 'How It Works',
     steps: [
-      { num: '1', title: 'Take the Quiz', desc: 'Answer fun questions to reveal your personality' },
-      { num: '2', title: 'Get Matched', desc: 'We find 5-7 compatible people for your game night' },
+      { num: '1', title: 'Take the Quiz', desc: 'Answer 10 questions about your personality and dating style' },
+      { num: '2', title: 'Book a Game Night', desc: 'Choose an event at a cool venue in your city' },
       { num: '3', title: 'Play & Connect', desc: 'Meet 5-7 compatible people and play flirty games together' },
       { num: '4', title: 'Match & Date', desc: 'Choose who you vibed with and start chatting' },
     ],
@@ -74,16 +76,27 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
   const renderSlide = ({ item, index }: { item: typeof SLIDES[0]; index: number }) => (
     <View style={styles.slide}>
       <Card variant="elevated" style={styles.card}>
-        {item.iconName && <Icon name={item.iconName} size={80} color={colors.primary} />}
+        {item.iconName && (
+          <View style={styles.iconGlow}>
+            <Icon name={item.iconName} size={80} color={colors.primary} />
+          </View>
+        )}
         <Text style={styles.title}>{item.title}</Text>
 
         {item.subtitle && <Text style={styles.subtitle}>{item.subtitle}</Text>}
-        
+
         {item.steps && (
           <View style={styles.stepsContainer}>
             {item.steps.map((step, i) => (
               <View key={i} style={styles.stepRow}>
-                <View style={styles.stepNum}><Text style={styles.stepNumText}>{step.num}</Text></View>
+                <LinearGradient
+                  colors={[colors.primary, colors.primaryLight]}
+                  style={styles.stepNum}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                >
+                  <Text style={styles.stepNumText}>{step.num}</Text>
+                </LinearGradient>
                 <View style={styles.stepContent}>
                   <Text style={styles.stepTitle}>{step.title}</Text>
                   <Text style={styles.stepDesc}>{step.desc}</Text>
@@ -111,7 +124,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
   );
 
   return (
-    <GradientBackground>
+    <GradientBackground variant="intense">
       <StatusBar barStyle="light-content" />
       <SafeAreaView style={styles.container}>
         <FlatList
@@ -134,8 +147,20 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
 
         {/* Buttons */}
         <View style={styles.buttonContainer}>
-          <Button title={currentIndex === SLIDES.length - 1 ? 'Get Started' : 'Continue'} onPress={handleNext} variant="primary" haptic="medium" />
-          <Button title="Skip Intro" onPress={onSkip} variant="secondary" style={styles.skipButton} />
+          <Button 
+            title={currentIndex === SLIDES.length - 1 ? 'Get Started' : 'Continue'} 
+            onPress={handleNext} 
+            variant="primary" 
+            size="large"
+            haptic="medium" 
+          />
+          <Button 
+            title="Skip Intro" 
+            onPress={onSkip} 
+            variant="secondary" 
+            size="large"
+            style={styles.skipButton} 
+          />
         </View>
       </SafeAreaView>
     </GradientBackground>
@@ -144,27 +169,56 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  slide: { width, padding: spacing.xl, paddingTop: 60 },
-  card: { alignItems: 'center', paddingVertical: 30 },
-  title: { fontSize: 24, fontWeight: '700', color: colors.text, textAlign: 'center', marginBottom: 20, marginTop: 20 },
-  subtitle: { fontSize: 16, color: colors.textSecondary, textAlign: 'center', lineHeight: 24 },
-  stepsContainer: { width: '100%', gap: 15, marginTop: 10 },
+  slide: { width, padding: spacing.xl, paddingTop: 50 },
+  card: { alignItems: 'center', paddingVertical: 35, paddingHorizontal: 25 },
+  iconGlow: { ...shadows.glowIntense, marginBottom: 10 },
+  title: { 
+    fontSize: 24, 
+    fontWeight: '700', 
+    color: colors.text, 
+    textAlign: 'center', 
+    marginBottom: 20, 
+    marginTop: 15,
+    lineHeight: 34,
+    letterSpacing: 0.5,
+  },
+  subtitle: { 
+    fontSize: 16, 
+    color: colors.textSecondary, 
+    textAlign: 'center', 
+    lineHeight: 26,
+    paddingHorizontal: 10,
+  },
+  stepsContainer: { width: '100%', gap: 18, marginTop: 15 },
   stepRow: { flexDirection: 'row', gap: 15, alignItems: 'flex-start' },
-  stepNum: { width: 40, height: 40, borderRadius: 20, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
+  stepNum: { 
+    width: 40, 
+    height: 40, 
+    borderRadius: 20, 
+    alignItems: 'center', 
+    justifyContent: 'center',
+    ...shadows.glow,
+  },
   stepNumText: { color: '#fff', fontWeight: '700', fontSize: 16 },
   stepContent: { flex: 1 },
-  stepTitle: { fontSize: 16, fontWeight: '600', color: colors.text, marginBottom: 4 },
-  stepDesc: { fontSize: 14, color: colors.textSecondary, lineHeight: 20 },
-  benefitsContainer: { width: '100%', gap: 15, marginTop: 10 },
-  benefitCard: { backgroundColor: 'rgba(255, 20, 147, 0.1)', borderWidth: 1, borderColor: colors.cardBorder, borderRadius: borderRadius.md, padding: 20 },
+  stepTitle: { fontSize: 16, fontWeight: '600', color: colors.text, marginBottom: 5 },
+  stepDesc: { fontSize: 14, color: colors.textTertiary, lineHeight: 21 },
+  benefitsContainer: { width: '100%', gap: 15, marginTop: 15 },
+  benefitCard: { 
+    backgroundColor: 'rgba(255, 20, 147, 0.1)', 
+    borderWidth: 1, 
+    borderColor: colors.cardBorder, 
+    borderRadius: borderRadius.md, 
+    padding: 20,
+  },
   benefitHeader: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 8 },
   benefitTitle: { fontSize: 16, fontWeight: '600', color: colors.text },
-  benefitDesc: { fontSize: 14, color: colors.textSecondary, lineHeight: 20 },
+  benefitDesc: { fontSize: 14, color: colors.textTertiary, lineHeight: 21 },
   dotsContainer: { flexDirection: 'row', justifyContent: 'center', gap: 8, marginBottom: 20 },
   dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: 'rgba(255, 255, 255, 0.3)' },
   dotActive: { backgroundColor: colors.primary, width: 24 },
   buttonContainer: { paddingHorizontal: spacing.xl, paddingBottom: spacing.xxl },
-  skipButton: { marginTop: spacing.md },
+  skipButton: { marginTop: spacing.lg },
 });
 
 export default OnboardingScreen;

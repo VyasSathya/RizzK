@@ -1,6 +1,6 @@
 ﻿/**
  * GameSelectScreen - Select which game to play
- * Shows all 7 games in a grid
+ * Shows all 7 games in a sleek grid matching the prototype
  */
 
 import React from 'react';
@@ -12,28 +12,32 @@ import {
   ScrollView,
   TouchableOpacity,
   StatusBar,
+  Dimensions,
 } from 'react-native';
 import Animated, { FadeInDown } from '../shims/reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
-import { GradientBackground, Card, Logo, Icon, IconName } from '../components/common';
-import { colors, spacing, borderRadius } from '../theme';
+import { GradientBackground, Logo, Icon, IconName } from '../components/common';
+import { colors, spacing, borderRadius, shadows } from '../theme';
 import { HapticService } from '../services/haptics';
+
+const { width } = Dimensions.get('window');
+const CARD_WIDTH = (width - spacing.xl * 2 - spacing.md) / 2;
 
 export type GameType = 'spark' | 'hottake' | 'twotruths' | 'never' | 'dare' | 'battle' | 'whosaid';
 
 interface GameSelectScreenProps {
   onGameSelect: (game: GameType) => void;
-  onBack: () => void;
+  onBack?: () => void;
 }
 
 const GAMES: { id: GameType; title: string; icon: IconName; desc: string }[] = [
-  { id: 'spark', title: 'Spark', icon: 'zap', desc: 'Deep questions' },
-  { id: 'dare', title: 'Dare or Drink', icon: 'activity', desc: 'Bold dares' },
+  { id: 'spark', title: 'Spark', icon: 'zap', desc: 'Quick chemistry test' },
   { id: 'hottake', title: 'Hot Take', icon: 'award', desc: 'Most likely to' },
-  { id: 'never', title: 'Never Have I Ever', icon: 'heart', desc: 'Confessions' },
-  { id: 'battle', title: 'Battle of Sexes', icon: 'users', desc: 'Team trivia' },
-  { id: 'whosaid', title: 'Who Said It?', icon: 'message-circle', desc: 'Guess the player' },
-  { id: 'twotruths', title: 'Two Truths & a Lie', icon: 'eye', desc: 'Spot the lie' },
+  { id: 'twotruths', title: 'Two Truths', icon: 'eye', desc: 'Spot the lie' },
+  { id: 'never', title: 'Never Have I', icon: 'heart', desc: 'Confessions' },
+  { id: 'dare', title: 'Dare or Drink', icon: 'activity', desc: 'Take the risk' },
+  { id: 'battle', title: 'Battle', icon: 'users', desc: 'Men vs Women' },
+  { id: 'whosaid', title: 'Who Said It', icon: 'message-circle', desc: 'Guess who' },
 ];
 
 const GameCard: React.FC<{
@@ -48,15 +52,17 @@ const GameCard: React.FC<{
         HapticService.light();
         onPress();
       }}
-      activeOpacity={0.8}
+      activeOpacity={0.85}
     >
       <LinearGradient
-        colors={['rgba(255, 20, 147, 0.2)', 'rgba(255, 20, 147, 0.05)']}
+        colors={['rgba(255, 20, 147, 0.15)', 'rgba(255, 20, 147, 0.03)']}
         style={styles.gameCardGradient}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
       >
-        <Icon name={game.icon} size={40} color={colors.primary} />
+        <View style={styles.iconWrapper}>
+          <Icon name={game.icon} size={32} color={colors.primary} />
+        </View>
         <Text style={styles.gameTitle}>{game.title}</Text>
         <Text style={styles.gameDesc}>{game.desc}</Text>
       </LinearGradient>
@@ -108,45 +114,63 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   scrollContent: { padding: spacing.xl, paddingTop: 40 },
   header: { alignItems: 'center', marginBottom: 30 },
-  subtitle: { color: colors.textSecondary, marginTop: 10, fontSize: 15 },
+  subtitle: { 
+    color: colors.textSecondary, 
+    marginTop: 12, 
+    fontSize: 16,
+    letterSpacing: 2,
+    textTransform: 'uppercase',
+  },
   gamesGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    gap: 15,
+    gap: spacing.md,
   },
   gameCard: {
-    width: '47%',
+    width: CARD_WIDTH,
+    marginBottom: spacing.md,
     borderRadius: borderRadius.lg,
     overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: colors.cardBorder,
-    marginBottom: 10,
+    ...shadows.card,
   },
   gameCardGradient: {
-    padding: 20,
+    aspectRatio: 1,
     alignItems: 'center',
-    minHeight: 130,
     justifyContent: 'center',
+    padding: spacing.lg,
+    borderWidth: 1,
+    borderColor: colors.cardBorder,
+    borderRadius: borderRadius.lg,
+  },
+  iconWrapper: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: 'rgba(255, 20, 147, 0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
   },
   gameTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
     color: colors.text,
     textAlign: 'center',
-    marginTop: 10,
-    marginBottom: 5,
+    marginBottom: 4,
+    letterSpacing: 0.5,
   },
   gameDesc: {
     fontSize: 12,
-    color: colors.textSecondary,
+    color: colors.textTertiary,
     textAlign: 'center',
   },
   infoText: {
     textAlign: 'center',
-    color: colors.textTertiary,
+    color: colors.textMuted,
     fontSize: 14,
-    marginTop: 25,
+    marginTop: 20,
+    letterSpacing: 1,
   },
 });
 

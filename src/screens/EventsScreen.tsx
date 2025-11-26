@@ -1,6 +1,6 @@
 ﻿/**
  * EventsScreen - List of upcoming game nights
- * Matches the HTML prototype events list
+ * Matches the HTML prototype events list with sleek cards
  */
 
 import React from 'react';
@@ -15,8 +15,8 @@ import {
 } from 'react-native';
 import Animated, { FadeInDown } from '../shims/reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
-import { GradientBackground, Card, Logo, Icon } from '../components/common';
-import { colors, spacing, borderRadius } from '../theme';
+import { GradientBackground, Logo, Icon } from '../components/common';
+import { colors, spacing, borderRadius, shadows } from '../theme';
 import { HapticService } from '../services/haptics';
 
 interface Event {
@@ -47,36 +47,43 @@ const EventCard: React.FC<{ event: Event; onPress: () => void; delay: number }> 
         HapticService.light();
         onPress();
       }}
-      activeOpacity={0.8}
+      activeOpacity={0.85}
     >
-      <View style={styles.eventHeader}>
-        <LinearGradient
-          colors={[colors.primary, colors.primaryLight]}
-          style={styles.eventIcon}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-        >
-          <Icon name="calendar" size={30} color="#fff" />
-        </LinearGradient>
-        <View style={styles.eventInfo}>
-          <Text style={styles.eventTitle}>{event.title}</Text>
-          <Text style={styles.eventDate}>{event.date} | {event.time}</Text>
+      <LinearGradient
+        colors={['rgba(255, 20, 147, 0.12)', 'rgba(255, 20, 147, 0.03)']}
+        style={styles.eventCardGradient}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      >
+        <View style={styles.eventHeader}>
+          <LinearGradient
+            colors={[colors.primary, colors.primaryLight]}
+            style={styles.eventIcon}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          >
+            <Icon name="calendar" size={24} color="#fff" />
+          </LinearGradient>
+          <View style={styles.eventInfo}>
+            <Text style={styles.eventTitle}>{event.title}</Text>
+            <Text style={styles.eventDate}>{event.date} | {event.time}</Text>
+          </View>
         </View>
-      </View>
-      <View style={styles.eventMeta}>
-        <View style={styles.metaRow}>
-          <Icon name="map-pin" size={14} color={colors.textSecondary} />
-          <Text style={styles.metaItem}>{event.venue}</Text>
+        <View style={styles.eventMeta}>
+          <View style={styles.metaRow}>
+            <Icon name="map-pin" size={14} color={colors.textTertiary} />
+            <Text style={styles.metaItem}>{event.venue}</Text>
+          </View>
+          <View style={styles.metaRow}>
+            <Icon name="users" size={14} color={colors.textTertiary} />
+            <Text style={styles.metaItem}>{event.people} people</Text>
+          </View>
+          <View style={styles.metaRow}>
+            <Icon name="dollar-sign" size={14} color={colors.textTertiary} />
+            <Text style={styles.metaItem}>\</Text>
+          </View>
         </View>
-        <View style={styles.metaRow}>
-          <Icon name="users" size={14} color={colors.textSecondary} />
-          <Text style={styles.metaItem}>{event.people} people</Text>
-        </View>
-        <View style={styles.metaRow}>
-          <Icon name="dollar-sign" size={14} color={colors.textSecondary} />
-          <Text style={styles.metaItem}>\</Text>
-        </View>
-      </View>
+      </LinearGradient>
     </TouchableOpacity>
   </Animated.View>
 );
@@ -107,17 +114,6 @@ export const EventsScreen: React.FC<EventsScreenProps> = ({ onEventPress }) => {
               />
             ))}
           </View>
-
-          {/* Empty State (if no events) */}
-          {MOCK_EVENTS.length === 0 && (
-            <Card variant="subtle" style={styles.emptyState}>
-              <Icon name="play" size={60} color={colors.primary} />
-              <Text style={styles.emptyTitle}>No Events Yet</Text>
-              <Text style={styles.emptyText}>
-                Check back soon for upcoming game nights in your area!
-              </Text>
-            </Card>
-          )}
         </ScrollView>
       </SafeAreaView>
     </GradientBackground>
@@ -128,26 +124,52 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   scrollContent: { padding: spacing.xl, paddingTop: 40 },
   header: { alignItems: 'center', marginBottom: 30 },
-  subtitle: { color: colors.textSecondary, marginTop: 10, fontSize: 15 },
-  eventsList: { gap: 15 },
+  subtitle: { 
+    color: colors.textSecondary, 
+    marginTop: 12, 
+    fontSize: 16,
+    letterSpacing: 2,
+    textTransform: 'uppercase',
+  },
+  eventsList: { gap: spacing.lg },
   eventCard: {
-    backgroundColor: colors.glassBg,
+    borderRadius: borderRadius.lg,
+    overflow: 'hidden',
+    ...shadows.card,
+  },
+  eventCardGradient: {
+    padding: spacing.xl,
     borderWidth: 1,
     borderColor: colors.cardBorder,
     borderRadius: borderRadius.lg,
-    padding: 20,
   },
-  eventHeader: { flexDirection: 'row', alignItems: 'center', gap: 15, marginBottom: 12 },
-  eventIcon: { width: 60, height: 60, borderRadius: borderRadius.md, alignItems: 'center', justifyContent: 'center' },
+  eventHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 18 },
+  eventIcon: {
+    width: 50,
+    height: 50,
+    borderRadius: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 15,
+  },
   eventInfo: { flex: 1 },
-  eventTitle: { fontSize: 18, fontWeight: '600', color: colors.text, marginBottom: 5 },
+  eventTitle: { 
+    fontSize: 18, 
+    fontWeight: '700', 
+    color: colors.text,
+    letterSpacing: 0.5,
+    marginBottom: 4,
+  },
   eventDate: { fontSize: 14, color: colors.textSecondary },
-  eventMeta: { flexDirection: 'row', gap: 15 },
-  metaRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  metaItem: { fontSize: 13, color: colors.textSecondary },
-  emptyState: { alignItems: 'center', paddingVertical: 40 },
-  emptyTitle: { fontSize: 20, fontWeight: '600', color: colors.text, marginBottom: 10, marginTop: 20 },
-  emptyText: { fontSize: 15, color: colors.textSecondary, textAlign: 'center' },
+  eventMeta: { 
+    flexDirection: 'row', 
+    justifyContent: 'space-between',
+    paddingTop: 15,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  metaRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  metaItem: { fontSize: 13, color: colors.textTertiary },
 });
 
 export default EventsScreen;

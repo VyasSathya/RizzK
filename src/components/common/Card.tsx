@@ -1,6 +1,6 @@
-/**
+﻿/**
  * Card - Glass morphism card with pink border glow
- * Matches the HTML prototype container style
+ * Matches the HTML prototype container style exactly
  */
 
 import React from 'react';
@@ -9,19 +9,21 @@ import {
   StyleSheet,
   ViewStyle,
   TouchableOpacity,
+  Platform,
 } from 'react-native';
+import { BlurView } from 'expo-blur';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withSpring,
 } from '../../shims/reanimated';
-import { colors, spacing, borderRadius } from '../../theme';
+import { colors, spacing, borderRadius, shadows } from '../../theme';
 import { HapticService } from '../../services/haptics';
 
 interface CardProps {
   children: React.ReactNode;
   style?: ViewStyle;
-  variant?: 'default' | 'elevated' | 'subtle';
+  variant?: 'default' | 'elevated' | 'subtle' | 'glass';
   onPress?: () => void;
   haptic?: boolean;
 }
@@ -47,8 +49,8 @@ export const Card: React.FC<CardProps> = ({
 
   const handlePressIn = () => {
     if (!onPress) return;
-    scale.value = withSpring(0.98, { damping: 15, stiffness: 300 });
-    translateY.value = withSpring(2, { damping: 15, stiffness: 300 });
+    scale.value = withSpring(0.97, { damping: 15, stiffness: 300 });
+    translateY.value = withSpring(3, { damping: 15, stiffness: 300 });
   };
 
   const handlePressOut = () => {
@@ -67,6 +69,7 @@ export const Card: React.FC<CardProps> = ({
     default: styles.defaultCard,
     elevated: styles.elevatedCard,
     subtle: styles.subtleCard,
+    glass: styles.glassCard,
   };
 
   if (onPress) {
@@ -98,36 +101,27 @@ export const Card: React.FC<CardProps> = ({
 const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.cardBg,
-    borderRadius: borderRadius.lg,
+    borderRadius: borderRadius.xl,
     padding: spacing.xl,
     borderWidth: 1,
     borderColor: colors.cardBorder,
   },
   defaultCard: {
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.4,
-    shadowRadius: 40,
-    elevation: 8,
+    ...shadows.card,
   },
   elevatedCard: {
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.6,
-    shadowRadius: 60,
-    elevation: 12,
+    ...shadows.glowIntense,
+    borderColor: colors.cardBorderHover,
   },
   subtleCard: {
     backgroundColor: colors.glassBg,
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.2,
-    shadowRadius: 20,
-    elevation: 4,
+    ...shadows.glow,
+  },
+  glassCard: {
+    backgroundColor: 'rgba(10, 10, 10, 0.85)',
+    backdropFilter: 'blur(40px)',
+    ...shadows.glowIntense,
   },
 });
 
 export default Card;
-
-
-
