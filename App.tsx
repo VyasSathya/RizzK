@@ -2,11 +2,10 @@
  * RizzK Mobile App - Entry point with fonts
  */
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useFonts, Raleway_400Regular, Raleway_500Medium, Raleway_600SemiBold, Raleway_700Bold } from '@expo-google-fonts/raleway';
-import { Cinzel_400Regular, Cinzel_600SemiBold, Cinzel_700Bold } from '@expo-google-fonts/cinzel';
 import * as SplashScreen from 'expo-splash-screen';
 import { colors } from './src/theme';
 import { LandingScreen, SignUpScreen, LoginScreen, OnboardingScreen, PhotoUploadScreen, PersonalityQuizScreen, EventsScreen, EventDetailScreen, GameLobbyScreen, GameSelectScreen, MatchSelectionScreen, MatchesScreen, ChatScreen, SparkGameScreen, HotTakeGameScreen, TwoTruthsGameScreen, NeverHaveIEverScreen, DareOrDrinkScreen, BattleOfSexesScreen, WhoSaidItScreen } from './src/screens';
@@ -21,21 +20,14 @@ export default function App() {
   const [selectedEventId, setSelectedEventId] = useState<string>('1');
   const [selectedMatchId, setSelectedMatchId] = useState<string>('1');
 
-  const [fontsLoaded] = useFonts({
-    Raleway_400Regular, Raleway_500Medium, Raleway_600SemiBold, Raleway_700Bold,
-    Cinzel_400Regular, Cinzel_600SemiBold, Cinzel_700Bold,
-  });
+  const [fontsLoaded] = useFonts({ Raleway_400Regular, Raleway_500Medium, Raleway_600SemiBold, Raleway_700Bold });
 
   const onLayoutRootView = useCallback(async () => {
     if (fontsLoaded) { await SplashScreen.hideAsync(); }
   }, [fontsLoaded]);
 
   if (!fontsLoaded) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={colors.primary} />
-      </View>
-    );
+    return <View style={styles.loadingContainer}><ActivityIndicator size="large" color={colors.primary} /></View>;
   }
 
   const handleGameSelect = (game: GameType) => { setCurrentScreen(game as Screen); };
