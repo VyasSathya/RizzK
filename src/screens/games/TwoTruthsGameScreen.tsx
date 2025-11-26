@@ -12,7 +12,7 @@ import {
   StatusBar,
   TouchableOpacity,
 } from 'react-native';
-import Animated, { FadeIn, SlideInRight, FadeInDown } from 'react-native-reanimated';
+import Animated, { FadeIn, SlideInRight, FadeInDown } from '../../shims/reanimated';
 import { GradientBackground, Button, Card } from '../../components/common';
 import { GameHeader } from '../../components/games';
 import { colors, spacing, borderRadius } from '../../theme';
@@ -185,4 +185,6 @@ const styles = StyleSheet.create({
 });
 
 export default TwoTruthsGameScreen;
+
+
 

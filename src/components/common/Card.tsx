@@ -14,7 +14,7 @@ import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withSpring,
-} from 'react-native-reanimated';
+} from '../../shims/reanimated';
 import { colors, spacing, borderRadius } from '../../theme';
 import { HapticService } from '../../services/haptics';
 
@@ -128,4 +128,6 @@ const styles = StyleSheet.create({
 });
 
 export default Card;
+
+
 

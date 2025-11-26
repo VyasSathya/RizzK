@@ -14,7 +14,7 @@ import {
 import Animated, {
   FadeInDown,
   FadeInUp,
-} from 'react-native-reanimated';
+} from '../shims/reanimated';
 import { GradientBackground, Button, Card, LogoWithTagline } from '../components/common';
 import { colors, spacing } from '../theme';
 
@@ -137,4 +137,5 @@ const styles = StyleSheet.create({
 });
 
 export default LandingScreen;
+
 

@@ -12,7 +12,7 @@ import {
   StatusBar,
   TouchableOpacity,
 } from 'react-native';
-import Animated, { FadeIn, SlideInRight, FadeInDown } from 'react-native-reanimated';
+import Animated, { FadeIn, SlideInRight, FadeInDown } from '../../shims/reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { GradientBackground, Button, Card } from '../../components/common';
 import { GameHeader } from '../../components/games';
@@ -169,4 +169,6 @@ const styles = StyleSheet.create({
 });
 
 export default BattleOfSexesScreen;
+
+
 

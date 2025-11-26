@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet, View } from 'react-native';
-import Animated, { useAnimatedStyle, withSpring, useSharedValue } from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, withSpring, useSharedValue } from '../../shims/reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors, borderRadius } from '../../theme';
 import { HapticService } from '../../services/haptics';
@@ -158,4 +158,6 @@ const styles = StyleSheet.create({
 });
 
 export default PlayerVoteCard;
+
+
 

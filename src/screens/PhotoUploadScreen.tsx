@@ -13,7 +13,7 @@ import {
   StatusBar,
   Alert,
 } from 'react-native';
-import Animated, { FadeInDown } from 'react-native-reanimated';
+import Animated, { FadeInDown } from '../shims/reanimated';
 import { GradientBackground, Button, Card } from '../components/common';
 import { colors, spacing, borderRadius } from '../theme';
 import { HapticService } from '../services/haptics';
@@ -149,4 +149,5 @@ const styles = StyleSheet.create({
 });
 
 export default PhotoUploadScreen;
+
 

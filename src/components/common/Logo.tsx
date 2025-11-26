@@ -12,7 +12,7 @@ import Animated, {
   withTiming,
   useSharedValue,
   withDelay,
-} from 'react-native-reanimated';
+} from '../../shims/reanimated';
 import { colors } from '../../theme';
 
 interface LogoProps {
@@ -121,4 +121,6 @@ const styles = StyleSheet.create({
 });
 
 export default Logo;
+
+
 

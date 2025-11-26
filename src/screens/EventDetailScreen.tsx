@@ -12,7 +12,7 @@ import {
   ScrollView,
   StatusBar,
 } from 'react-native';
-import Animated, { FadeInDown } from 'react-native-reanimated';
+import Animated, { FadeInDown } from '../shims/reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { GradientBackground, Button, Card } from '../components/common';
 import { colors, spacing, borderRadius } from '../theme';
@@ -172,4 +172,5 @@ const styles = StyleSheet.create({
 });
 
 export default EventDetailScreen;
+
 

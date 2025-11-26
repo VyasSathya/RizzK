@@ -12,7 +12,7 @@ import {
   StatusBar,
   ScrollView,
 } from 'react-native';
-import Animated, { FadeIn, SlideInRight } from 'react-native-reanimated';
+import Animated, { FadeIn, SlideInRight } from '../../shims/reanimated';
 import { GradientBackground, Button, Card } from '../../components/common';
 import { GameHeader, PlayerVoteCard } from '../../components/games';
 import { colors, spacing } from '../../theme';
@@ -180,4 +180,6 @@ const styles = StyleSheet.create({
 });
 
 export default HotTakeGameScreen;
+
+
 

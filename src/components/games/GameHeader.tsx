@@ -5,7 +5,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import Animated, { useAnimatedStyle, withRepeat, withTiming, FadeIn } from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, withRepeat, withTiming, FadeIn } from '../../shims/reanimated';
 import { colors, spacing, borderRadius } from '../../theme';
 
 interface GameHeaderProps {
@@ -110,4 +110,6 @@ const styles = StyleSheet.create({
 });
 
 export default GameHeader;
+
+
 
