@@ -1,4 +1,4 @@
-/**
+﻿/**
  * TwoTruthsGameScreen - Two Truths and a Lie
  * Players guess which statement is the lie
  */
@@ -13,7 +13,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import Animated, { FadeIn, SlideInRight, FadeInDown } from '../../shims/reanimated';
-import { GradientBackground, Button, Card } from '../../components/common';
+import { GradientBackground, Button, Card, Avatar } from '../../components/common';
 import { GameHeader } from '../../components/games';
 import { colors, spacing, borderRadius } from '../../theme';
 import { HapticService } from '../../services/haptics';
@@ -24,11 +24,11 @@ interface TwoTruthsGameScreenProps {
 }
 
 const ROUNDS = [
-  { player: 'Maya', avatar: '👩', statements: ['I\'ve been skydiving twice', 'I can speak 3 languages', 'I\'ve never broken a bone'], lie: 1 },
-  { player: 'Alex', avatar: '👨', statements: ['I\'ve met a celebrity', 'I can juggle', 'I\'ve never been on a plane'], lie: 2 },
-  { player: 'Sam', avatar: '🧔', statements: ['I have a twin sibling', 'I\'ve climbed a mountain', 'I can play piano'], lie: 0 },
-  { player: 'Jordan', avatar: '👱‍♀️', statements: ['I\'ve lived in 5 countries', 'I\'m afraid of heights', 'I can cook 50 recipes'], lie: 2 },
-  { player: 'Taylor', avatar: '👨‍🦱', statements: ['I\'ve won a contest', 'I can do a backflip', 'I\'ve never had coffee'], lie: 1 },
+  { player: 'Maya', gender: 'female' as const, statements: ['I\'ve been skydiving twice', 'I can speak 3 languages', 'I\'ve never broken a bone'], lie: 1 },
+  { player: 'Alex', gender: 'male' as const, statements: ['I\'ve met a celebrity', 'I can juggle', 'I\'ve never been on a plane'], lie: 2 },
+  { player: 'Sam', gender: 'male' as const, statements: ['I have a twin sibling', 'I\'ve climbed a mountain', 'I can play piano'], lie: 0 },
+  { player: 'Jordan', gender: 'female' as const, statements: ['I\'ve lived in 5 countries', 'I\'m afraid of heights', 'I can cook 50 recipes'], lie: 2 },
+  { player: 'Taylor', gender: 'male' as const, statements: ['I\'ve won a contest', 'I can do a backflip', 'I\'ve never had coffee'], lie: 1 },
 ];
 
 export const TwoTruthsGameScreen: React.FC<TwoTruthsGameScreenProps> = ({
@@ -103,7 +103,7 @@ export const TwoTruthsGameScreen: React.FC<TwoTruthsGameScreenProps> = ({
         <View style={styles.content}>
           <GameHeader
             title="Two Truths & a Lie"
-            icon="🎭"
+            icon="eye"
             currentRound={currentRound}
             totalRounds={totalRounds}
             timeLeft={timeLeft}
@@ -112,7 +112,7 @@ export const TwoTruthsGameScreen: React.FC<TwoTruthsGameScreenProps> = ({
 
           {/* Current Player */}
           <Animated.View entering={FadeIn.duration(400)} style={styles.playerSection}>
-            <Text style={styles.playerAvatar}>{currentData.avatar}</Text>
+            <Avatar name={currentData.player} size={60} gender={currentData.gender} />
             <Text style={styles.playerName}>{currentData.player}'s Turn</Text>
             <Text style={styles.instruction}>Spot the lie!</Text>
           </Animated.View>
@@ -142,7 +142,7 @@ export const TwoTruthsGameScreen: React.FC<TwoTruthsGameScreenProps> = ({
           {revealed && (
             <Animated.View entering={FadeInDown.duration(400)} style={styles.resultContainer}>
               <Text style={selectedIndex === currentData.lie ? styles.resultCorrect : styles.resultWrong}>
-                {selectedIndex === currentData.lie ? '🎉 You got it!' : '❌ Wrong guess!'}
+                {selectedIndex === currentData.lie ? 'You got it!' : 'Wrong guess!'}
               </Text>
             </Animated.View>
           )}
@@ -166,8 +166,7 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   content: { flex: 1, padding: spacing.xl, paddingTop: 40 },
   playerSection: { alignItems: 'center', marginBottom: 20 },
-  playerAvatar: { fontSize: 50, marginBottom: 10 },
-  playerName: { fontSize: 22, fontWeight: '700', color: colors.text },
+  playerName: { fontSize: 22, fontWeight: '700', color: colors.text, marginTop: 10 },
   instruction: { fontSize: 14, color: colors.textSecondary, marginTop: 5 },
   statementsCard: { paddingVertical: 20, gap: 12 },
   statement: { flexDirection: 'row', alignItems: 'center', padding: 15, backgroundColor: colors.glassBg, borderWidth: 2, borderColor: 'rgba(255, 255, 255, 0.1)', borderRadius: borderRadius.md, gap: 12 },
@@ -185,6 +184,3 @@ const styles = StyleSheet.create({
 });
 
 export default TwoTruthsGameScreen;
-
-
-

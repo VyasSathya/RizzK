@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ChatScreen - Chat with a match
  * Simple chat interface
  */
@@ -18,7 +18,7 @@ import {
 } from 'react-native';
 import Animated, { FadeInDown, FadeIn } from '../shims/reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
-import { GradientBackground } from '../components/common';
+import { GradientBackground, Avatar, Icon } from '../components/common';
 import { colors, spacing, borderRadius } from '../theme';
 import { HapticService } from '../services/haptics';
 
@@ -32,12 +32,12 @@ interface Message {
 interface ChatScreenProps {
   matchId: string;
   matchName: string;
-  matchAvatar: string;
+  matchGender?: 'male' | 'female';
   onBack: () => void;
 }
 
 const INITIAL_MESSAGES: Message[] = [
-  { id: '1', text: 'Hey! Great meeting you last night 😊', sender: 'them', timestamp: '10:30 AM' },
+  { id: '1', text: 'Hey! Great meeting you last night', sender: 'them', timestamp: '10:30 AM' },
   { id: '2', text: 'You too! That two truths game was hilarious', sender: 'me', timestamp: '10:32 AM' },
   { id: '3', text: 'I still can\'t believe you\'ve never had coffee!', sender: 'them', timestamp: '10:33 AM' },
 ];
@@ -45,7 +45,7 @@ const INITIAL_MESSAGES: Message[] = [
 export const ChatScreen: React.FC<ChatScreenProps> = ({
   matchId,
   matchName = 'Maya',
-  matchAvatar = '👩',
+  matchGender = 'female',
   onBack,
 }) => {
   const [messages, setMessages] = useState<Message[]>(INITIAL_MESSAGES);
@@ -55,17 +55,17 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
   const handleSend = () => {
     if (!inputText.trim()) return;
     HapticService.light();
-    
+
     const newMessage: Message = {
       id: Date.now().toString(),
       text: inputText.trim(),
       sender: 'me',
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     };
-    
+
     setMessages([...messages, newMessage]);
     setInputText('');
-    
+
     setTimeout(() => {
       scrollViewRef.current?.scrollToEnd({ animated: true });
     }, 100);
@@ -78,10 +78,11 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity onPress={onBack} style={styles.backButton}>
-            <Text style={styles.backText}>← Back</Text>
+            <Icon name="arrow-left" size={20} color={colors.primary} />
+            <Text style={styles.backText}>Back</Text>
           </TouchableOpacity>
           <View style={styles.headerInfo}>
-            <Text style={styles.headerAvatar}>{matchAvatar}</Text>
+            <Avatar name={matchName} size={36} gender={matchGender} />
             <Text style={styles.headerName}>{matchName}</Text>
           </View>
           <View style={styles.headerSpacer} />
@@ -136,7 +137,7 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
               >
-                <Text style={styles.sendButtonText}>→</Text>
+                <Icon name="send" size={20} color="#fff" />
               </LinearGradient>
             </TouchableOpacity>
           </View>
@@ -149,10 +150,9 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
 const styles = StyleSheet.create({
   container: { flex: 1 },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: spacing.lg, paddingVertical: spacing.md, borderBottomWidth: 1, borderBottomColor: colors.cardBorder },
-  backButton: { padding: 8 },
+  backButton: { flexDirection: 'row', alignItems: 'center', padding: 8, gap: 5 },
   backText: { color: colors.primary, fontSize: 16 },
   headerInfo: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  headerAvatar: { fontSize: 30 },
   headerName: { fontSize: 18, fontWeight: '600', color: colors.text },
   headerSpacer: { width: 60 },
   keyboardView: { flex: 1 },
@@ -168,9 +168,6 @@ const styles = StyleSheet.create({
   sendButton: { width: 44, height: 44 },
   sendButtonDisabled: { opacity: 0.5 },
   sendButtonGradient: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
-  sendButtonText: { fontSize: 20, color: '#fff', fontWeight: '700' },
 });
 
 export default ChatScreen;
-
-

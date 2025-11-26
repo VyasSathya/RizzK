@@ -1,4 +1,4 @@
-/**
+﻿/**
  * GameHeader - Shared header for all games
  * Shows game title, round info, and timer
  */
@@ -6,11 +6,12 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Animated, { useAnimatedStyle, withRepeat, withTiming, FadeIn } from '../../shims/reanimated';
+import { Icon, IconName } from '../common';
 import { colors, spacing, borderRadius } from '../../theme';
 
 interface GameHeaderProps {
   title: string;
-  icon: string;
+  icon: IconName;
   currentRound: number;
   totalRounds: number;
   timeLeft?: number;
@@ -39,7 +40,7 @@ export const GameHeader: React.FC<GameHeaderProps> = ({
     <Animated.View entering={FadeIn.duration(400)} style={styles.container}>
       {/* Title */}
       <View style={styles.titleRow}>
-        <Text style={styles.icon}>{icon}</Text>
+        <Icon name={icon} size={40} color={colors.primary} />
         <Text style={styles.title}>{title}</Text>
       </View>
 
@@ -51,7 +52,7 @@ export const GameHeader: React.FC<GameHeaderProps> = ({
       {/* Timer */}
       {showTimer && (
         <Animated.View style={[styles.timerContainer, timerPulse]}>
-          <Text style={styles.timerIcon}>⏱️</Text>
+          <Icon name="clock" size={16} color={colors.text} />
           <Text style={[styles.timerText, time <= 10 && styles.timerWarning]}>
             {time}s
           </Text>
@@ -71,9 +72,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 15,
     marginBottom: 10,
-  },
-  icon: {
-    fontSize: 40,
   },
   title: {
     fontSize: 28,
@@ -96,9 +94,6 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255, 20, 147, 0.4)',
     borderRadius: borderRadius.full,
   },
-  timerIcon: {
-    fontSize: 16,
-  },
   timerText: {
     fontSize: 18,
     fontWeight: '700',
@@ -110,6 +105,3 @@ const styles = StyleSheet.create({
 });
 
 export default GameHeader;
-
-
-

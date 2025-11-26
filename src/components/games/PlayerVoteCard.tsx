@@ -1,4 +1,4 @@
-/**
+﻿/**
  * PlayerVoteCard - Card for voting on a player
  * Used in games like Hot Take, Who Said It, etc.
  */
@@ -6,14 +6,13 @@
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet, View } from 'react-native';
 import Animated, { useAnimatedStyle, withSpring, useSharedValue } from '../../shims/reanimated';
-import { LinearGradient } from 'expo-linear-gradient';
+import { Avatar, Icon } from '../common';
 import { colors, borderRadius } from '../../theme';
 import { HapticService } from '../../services/haptics';
 
 interface PlayerVoteCardProps {
   name: string;
-  avatar: string;
-  gender: 'male' | 'female';
+  gender?: 'male' | 'female';
   isSelected?: boolean;
   voteCount?: number;
   showVotes?: boolean;
@@ -25,7 +24,6 @@ const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
 export const PlayerVoteCard: React.FC<PlayerVoteCardProps> = ({
   name,
-  avatar,
   gender,
   isSelected = false,
   voteCount = 0,
@@ -34,10 +32,6 @@ export const PlayerVoteCard: React.FC<PlayerVoteCardProps> = ({
   disabled = false,
 }) => {
   const scale = useSharedValue(1);
-
-  const gradientColors = gender === 'female'
-    ? [colors.primary, colors.primaryLight]
-    : [colors.maleGradientStart, colors.maleGradientEnd];
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
@@ -63,25 +57,18 @@ export const PlayerVoteCard: React.FC<PlayerVoteCardProps> = ({
       activeOpacity={0.8}
       disabled={disabled}
     >
-      <LinearGradient
-        colors={gradientColors}
-        style={styles.avatar}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-      >
-        <Text style={styles.avatarText}>{avatar}</Text>
-      </LinearGradient>
+      <Avatar name={name} size={60} gender={gender} />
       <Text style={[styles.name, isSelected && styles.nameSelected]}>{name}</Text>
-      
+
       {showVotes && voteCount > 0 && (
         <View style={styles.voteBadge}>
           <Text style={styles.voteCount}>{voteCount}</Text>
         </View>
       )}
-      
+
       {isSelected && (
         <View style={styles.checkmark}>
-          <Text style={styles.checkmarkText}>✓</Text>
+          <Icon name="check" size={14} color="#fff" />
         </View>
       )}
     </AnimatedTouchable>
@@ -106,21 +93,11 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.4,
     shadowRadius: 15,
   },
-  avatar: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 10,
-  },
-  avatarText: {
-    fontSize: 28,
-  },
   name: {
     fontSize: 14,
     fontWeight: '600',
     color: colors.text,
+    marginTop: 10,
   },
   nameSelected: {
     color: colors.primary,
@@ -150,14 +127,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  checkmarkText: {
-    fontSize: 14,
-    color: '#fff',
-    fontWeight: '700',
-  },
 });
 
 export default PlayerVoteCard;
-
-
-

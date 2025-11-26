@@ -1,4 +1,4 @@
-/**
+﻿/**
  * DareOrDrinkScreen - Dare or Drink game
  * Players choose to do a dare or take a drink
  */
@@ -12,7 +12,7 @@ import {
   StatusBar,
 } from 'react-native';
 import Animated, { FadeIn, SlideInRight, FadeInDown } from '../../shims/reanimated';
-import { GradientBackground, Button, Card } from '../../components/common';
+import { GradientBackground, Button, Card, Avatar } from '../../components/common';
 import { GameHeader } from '../../components/games';
 import { colors, spacing } from '../../theme';
 import { HapticService } from '../../services/haptics';
@@ -36,12 +36,12 @@ const DARES = [
 ];
 
 const PLAYERS = [
-  { name: 'You', avatar: '😊' },
-  { name: 'Maya', avatar: '👩' },
-  { name: 'Alex', avatar: '👨' },
-  { name: 'Sam', avatar: '🧔' },
-  { name: 'Jordan', avatar: '👱‍♀️' },
-  { name: 'Taylor', avatar: '👨‍🦱' },
+  { name: 'You' },
+  { name: 'Maya', gender: 'female' as const },
+  { name: 'Alex', gender: 'male' as const },
+  { name: 'Sam', gender: 'male' as const },
+  { name: 'Jordan', gender: 'female' as const },
+  { name: 'Taylor', gender: 'male' as const },
 ];
 
 export const DareOrDrinkScreen: React.FC<DareOrDrinkScreenProps> = ({
@@ -87,7 +87,7 @@ export const DareOrDrinkScreen: React.FC<DareOrDrinkScreenProps> = ({
         <View style={styles.content}>
           <GameHeader
             title="Dare or Drink"
-            icon="🍸"
+            icon="activity"
             currentRound={currentRound}
             totalRounds={totalRounds}
             showTimer={false}
@@ -95,12 +95,12 @@ export const DareOrDrinkScreen: React.FC<DareOrDrinkScreenProps> = ({
 
           {/* Current Player */}
           <Animated.View entering={FadeIn.duration(400)} style={styles.playerSection}>
-            <Text style={styles.playerAvatar}>{currentPlayer.avatar}</Text>
+            <Avatar name={currentPlayer.name} size={60} gender={currentPlayer.gender} />
             <Text style={styles.playerName}>{currentPlayer.name}'s Turn</Text>
           </Animated.View>
 
           {/* Dare Card */}
-          <Animated.View key={`${currentRound}-${currentPlayerIndex}`} entering={SlideInRight.duration(400)}>
+          <Animated.View key={\\-\\} entering={SlideInRight.duration(400)}>
             <Card variant="elevated" style={styles.dareCard}>
               <Text style={styles.dareLabel}>THE DARE</Text>
               <Text style={styles.dareText}>{currentDare}</Text>
@@ -110,8 +110,8 @@ export const DareOrDrinkScreen: React.FC<DareOrDrinkScreenProps> = ({
           {/* Choice Buttons */}
           {!showResult && (
             <Animated.View entering={FadeIn.duration(400)} style={styles.choiceButtons}>
-              <Button title="🎯 Do the Dare" onPress={() => handleChoice('dare')} variant="primary" style={styles.choiceButton} />
-              <Button title="🍺 Take a Drink" onPress={() => handleChoice('drink')} variant="secondary" style={styles.choiceButton} />
+              <Button title="Do the Dare" onPress={() => handleChoice('dare')} variant="primary" style={styles.choiceButton} />
+              <Button title="Take a Drink" onPress={() => handleChoice('drink')} variant="secondary" style={styles.choiceButton} />
             </Animated.View>
           )}
 
@@ -119,7 +119,7 @@ export const DareOrDrinkScreen: React.FC<DareOrDrinkScreenProps> = ({
           {showResult && (
             <Animated.View entering={FadeInDown.duration(400)} style={styles.resultContainer}>
               <Text style={styles.resultText}>
-                {choice === 'dare' ? '🎯 Doing the dare!' : '🍺 Taking a drink!'}
+                {choice === 'dare' ? 'Doing the dare!' : 'Taking a drink!'}
               </Text>
               <Button title="Next Player" onPress={handleNext} variant="primary" haptic="light" />
             </Animated.View>
@@ -136,8 +136,7 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   content: { flex: 1, padding: spacing.xl, paddingTop: 40 },
   playerSection: { alignItems: 'center', marginBottom: 20 },
-  playerAvatar: { fontSize: 50, marginBottom: 10 },
-  playerName: { fontSize: 22, fontWeight: '700', color: colors.text },
+  playerName: { fontSize: 22, fontWeight: '700', color: colors.text, marginTop: 10 },
   dareCard: { paddingVertical: 40, alignItems: 'center', marginBottom: 25 },
   dareLabel: { fontSize: 12, color: colors.primary, fontWeight: '600', letterSpacing: 2, marginBottom: 15 },
   dareText: { fontSize: 20, fontWeight: '600', color: colors.text, textAlign: 'center', lineHeight: 30 },
@@ -149,6 +148,3 @@ const styles = StyleSheet.create({
 });
 
 export default DareOrDrinkScreen;
-
-
-

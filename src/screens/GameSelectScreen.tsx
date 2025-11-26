@@ -1,4 +1,4 @@
-/**
+﻿/**
  * GameSelectScreen - Select which game to play
  * Shows all 7 games in a grid
  */
@@ -15,7 +15,7 @@ import {
 } from 'react-native';
 import Animated, { FadeInDown } from '../shims/reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
-import { GradientBackground, Card, Logo } from '../components/common';
+import { GradientBackground, Card, Logo, Icon, IconName } from '../components/common';
 import { colors, spacing, borderRadius } from '../theme';
 import { HapticService } from '../services/haptics';
 
@@ -26,14 +26,14 @@ interface GameSelectScreenProps {
   onBack: () => void;
 }
 
-const GAMES = [
-  { id: 'spark' as GameType, title: 'Spark', icon: '⚡', desc: 'Deep questions' },
-  { id: 'dare' as GameType, title: 'Dare or Drink', icon: '🍸', desc: 'Bold dares' },
-  { id: 'hottake' as GameType, title: 'Hot Take', icon: '🔥', desc: 'Most likely to' },
-  { id: 'never' as GameType, title: 'Never Have I Ever', icon: '🙈', desc: 'Confessions' },
-  { id: 'battle' as GameType, title: 'Battle of Sexes', icon: '⚔️', desc: 'Team trivia' },
-  { id: 'whosaid' as GameType, title: 'Who Said It?', icon: '💬', desc: 'Guess the player' },
-  { id: 'twotruths' as GameType, title: 'Two Truths & a Lie', icon: '🎭', desc: 'Spot the lie' },
+const GAMES: { id: GameType; title: string; icon: IconName; desc: string }[] = [
+  { id: 'spark', title: 'Spark', icon: 'zap', desc: 'Deep questions' },
+  { id: 'dare', title: 'Dare or Drink', icon: 'activity', desc: 'Bold dares' },
+  { id: 'hottake', title: 'Hot Take', icon: 'award', desc: 'Most likely to' },
+  { id: 'never', title: 'Never Have I Ever', icon: 'heart', desc: 'Confessions' },
+  { id: 'battle', title: 'Battle of Sexes', icon: 'users', desc: 'Team trivia' },
+  { id: 'whosaid', title: 'Who Said It?', icon: 'message-circle', desc: 'Guess the player' },
+  { id: 'twotruths', title: 'Two Truths & a Lie', icon: 'eye', desc: 'Spot the lie' },
 ];
 
 const GameCard: React.FC<{
@@ -56,7 +56,7 @@ const GameCard: React.FC<{
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
       >
-        <Text style={styles.gameIcon}>{game.icon}</Text>
+        <Icon name={game.icon} size={40} color={colors.primary} />
         <Text style={styles.gameTitle}>{game.title}</Text>
         <Text style={styles.gameDesc}>{game.desc}</Text>
       </LinearGradient>
@@ -72,7 +72,7 @@ export const GameSelectScreen: React.FC<GameSelectScreenProps> = ({
     <GradientBackground>
       <StatusBar barStyle="light-content" />
       <SafeAreaView style={styles.container}>
-        <ScrollView 
+        <ScrollView
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
@@ -96,7 +96,7 @@ export const GameSelectScreen: React.FC<GameSelectScreenProps> = ({
 
           {/* Info */}
           <Text style={styles.infoText}>
-            Click any game to play →
+            Tap any game to play
           </Text>
         </ScrollView>
       </SafeAreaView>
@@ -121,6 +121,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: colors.cardBorder,
+    marginBottom: 10,
   },
   gameCardGradient: {
     padding: 20,
@@ -128,15 +129,12 @@ const styles = StyleSheet.create({
     minHeight: 130,
     justifyContent: 'center',
   },
-  gameIcon: {
-    fontSize: 40,
-    marginBottom: 10,
-  },
   gameTitle: {
     fontSize: 16,
     fontWeight: '600',
     color: colors.text,
     textAlign: 'center',
+    marginTop: 10,
     marginBottom: 5,
   },
   gameDesc: {
@@ -153,5 +151,3 @@ const styles = StyleSheet.create({
 });
 
 export default GameSelectScreen;
-
-

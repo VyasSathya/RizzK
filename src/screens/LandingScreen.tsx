@@ -1,4 +1,4 @@
-/**
+﻿/**
  * LandingScreen - First screen users see
  * Matches the HTML prototype landing screen exactly
  */
@@ -15,7 +15,7 @@ import Animated, {
   FadeInDown,
   FadeInUp,
 } from '../shims/reanimated';
-import { GradientBackground, Button, Card, LogoWithTagline } from '../components/common';
+import { GradientBackground, Button, Card, LogoWithTagline, Icon } from '../components/common';
 import { colors, spacing } from '../theme';
 
 interface LandingScreenProps {
@@ -45,7 +45,7 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({
             <Card variant="elevated" style={styles.mainCard}>
               {/* Icon */}
               <View style={styles.iconContainer}>
-                <Text style={styles.icon}>⚡</Text>
+                <Icon name="zap" size={80} color={colors.primary} />
               </View>
 
               {/* Headline */}
@@ -62,7 +62,7 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({
           </Animated.View>
 
           {/* Buttons */}
-          <Animated.View 
+          <Animated.View
             entering={FadeInUp.delay(600).duration(800)}
             style={styles.buttonContainer}
           >
@@ -109,9 +109,6 @@ const styles = StyleSheet.create({
   iconContainer: {
     marginBottom: 20,
   },
-  icon: {
-    fontSize: 80,
-  },
   headline: {
     fontSize: 28,
     fontWeight: '700',
@@ -137,5 +134,3 @@ const styles = StyleSheet.create({
 });
 
 export default LandingScreen;
-
-

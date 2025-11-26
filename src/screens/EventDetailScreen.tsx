@@ -1,4 +1,4 @@
-/**
+﻿/**
  * EventDetailScreen - Event details and registration
  * Matches the HTML prototype event detail screen
  */
@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import Animated, { FadeInDown } from '../shims/reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
-import { GradientBackground, Button, Card } from '../components/common';
+import { GradientBackground, Button, Card, Icon } from '../components/common';
 import { colors, spacing, borderRadius } from '../theme';
 import { HapticService } from '../services/haptics';
 
@@ -59,7 +59,7 @@ export const EventDetailScreen: React.FC<EventDetailScreenProps> = ({
     <GradientBackground>
       <StatusBar barStyle="light-content" />
       <SafeAreaView style={styles.container}>
-        <ScrollView 
+        <ScrollView
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
@@ -72,14 +72,14 @@ export const EventDetailScreen: React.FC<EventDetailScreenProps> = ({
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
               >
-                <Text style={styles.headerIcon}>🎮</Text>
+                <Icon name="play" size={50} color="#fff" />
                 <Text style={styles.headerTitle}>{event.title}</Text>
               </LinearGradient>
 
               {/* Event Details */}
               <View style={styles.details}>
                 <View style={styles.detailRow}>
-                  <Text style={styles.detailIcon}>📅</Text>
+                  <Icon name="calendar" size={24} color={colors.primary} />
                   <View>
                     <Text style={styles.detailLabel}>Date & Time</Text>
                     <Text style={styles.detailValue}>{event.date}</Text>
@@ -88,7 +88,7 @@ export const EventDetailScreen: React.FC<EventDetailScreenProps> = ({
                 </View>
 
                 <View style={styles.detailRow}>
-                  <Text style={styles.detailIcon}>📍</Text>
+                  <Icon name="map-pin" size={24} color={colors.primary} />
                   <View>
                     <Text style={styles.detailLabel}>Location</Text>
                     <Text style={styles.detailValue}>{event.venue}</Text>
@@ -97,7 +97,7 @@ export const EventDetailScreen: React.FC<EventDetailScreenProps> = ({
                 </View>
 
                 <View style={styles.detailRow}>
-                  <Text style={styles.detailIcon}>👥</Text>
+                  <Icon name="users" size={24} color={colors.primary} />
                   <View>
                     <Text style={styles.detailLabel}>Group Size</Text>
                     <Text style={styles.detailValue}>{event.people} people</Text>
@@ -116,14 +116,17 @@ export const EventDetailScreen: React.FC<EventDetailScreenProps> = ({
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>What's Included</Text>
                 {event.includes.map((item, index) => (
-                  <Text key={index} style={styles.includeItem}>✓ {item}</Text>
+                  <View key={index} style={styles.includeRow}>
+                    <Icon name="check" size={16} color={colors.success} />
+                    <Text style={styles.includeItem}>{item}</Text>
+                  </View>
                 ))}
               </View>
 
               {/* Price */}
               <View style={styles.priceContainer}>
                 <Text style={styles.priceLabel}>Price</Text>
-                <Text style={styles.price}>${event.price}</Text>
+                <Text style={styles.price}>\</Text>
               </View>
 
               {/* Buttons */}
@@ -153,18 +156,17 @@ const styles = StyleSheet.create({
   scrollContent: { padding: spacing.xl, paddingTop: 40 },
   card: { paddingVertical: 0, overflow: 'hidden' },
   headerGradient: { padding: 30, alignItems: 'center', marginHorizontal: -spacing.xl, marginTop: -spacing.xl },
-  headerIcon: { fontSize: 50, marginBottom: 10 },
-  headerTitle: { fontSize: 24, fontWeight: '700', color: '#fff' },
+  headerTitle: { fontSize: 24, fontWeight: '700', color: '#fff', marginTop: 10 },
   details: { paddingTop: 25, gap: 20 },
   detailRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 15 },
-  detailIcon: { fontSize: 24 },
   detailLabel: { fontSize: 12, color: colors.textTertiary, marginBottom: 4 },
   detailValue: { fontSize: 16, fontWeight: '600', color: colors.text },
   detailSubvalue: { fontSize: 14, color: colors.textSecondary },
   section: { marginTop: 25, paddingTop: 25, borderTopWidth: 1, borderTopColor: colors.cardBorder },
   sectionTitle: { fontSize: 16, fontWeight: '600', color: colors.text, marginBottom: 12 },
   description: { fontSize: 15, color: colors.textSecondary, lineHeight: 24 },
-  includeItem: { fontSize: 15, color: colors.textSecondary, marginBottom: 8 },
+  includeRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 8 },
+  includeItem: { fontSize: 15, color: colors.textSecondary },
   priceContainer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 25, paddingTop: 25, borderTopWidth: 1, borderTopColor: colors.cardBorder, marginBottom: 25 },
   priceLabel: { fontSize: 16, color: colors.textSecondary },
   price: { fontSize: 32, fontWeight: '700', color: colors.primary },
@@ -172,5 +174,3 @@ const styles = StyleSheet.create({
 });
 
 export default EventDetailScreen;
-
-

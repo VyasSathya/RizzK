@@ -1,4 +1,4 @@
-/**
+﻿/**
  * WhoSaidItScreen - Guess who said the quote
  * Players guess which player said a statement
  */
@@ -32,11 +32,11 @@ const QUOTES = [
 ];
 
 const PLAYERS = [
-  { id: '1', name: 'Maya', avatar: '👩', gender: 'female' as const },
-  { id: '2', name: 'Alex', avatar: '👨', gender: 'male' as const },
-  { id: '3', name: 'Sam', avatar: '🧔', gender: 'male' as const },
-  { id: '4', name: 'Jordan', avatar: '👱‍♀️', gender: 'female' as const },
-  { id: '5', name: 'Taylor', avatar: '👨‍🦱', gender: 'male' as const },
+  { id: '1', name: 'Maya', gender: 'female' as const },
+  { id: '2', name: 'Alex', gender: 'male' as const },
+  { id: '3', name: 'Sam', gender: 'male' as const },
+  { id: '4', name: 'Jordan', gender: 'female' as const },
+  { id: '5', name: 'Taylor', gender: 'male' as const },
 ];
 
 export const WhoSaidItScreen: React.FC<WhoSaidItScreenProps> = ({
@@ -103,7 +103,7 @@ export const WhoSaidItScreen: React.FC<WhoSaidItScreenProps> = ({
       <StatusBar barStyle="light-content" />
       <SafeAreaView style={styles.container}>
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-          <GameHeader title="Who Said It?" icon="💬" currentRound={currentRound} totalRounds={totalRounds} timeLeft={timeLeft} showTimer={!revealed} />
+          <GameHeader title="Who Said It?" icon="message-circle" currentRound={currentRound} totalRounds={totalRounds} timeLeft={timeLeft} showTimer={!revealed} />
 
           {/* Score */}
           <Text style={styles.score}>Score: {score}/{currentRound - (revealed ? 0 : 1)}</Text>
@@ -122,7 +122,6 @@ export const WhoSaidItScreen: React.FC<WhoSaidItScreenProps> = ({
               <PlayerVoteCard
                 key={player.id}
                 name={player.name}
-                avatar={player.avatar}
                 gender={player.gender}
                 isSelected={selectedPlayer === player.id || (revealed && player.name === currentQuote.saidBy)}
                 onPress={() => handlePlayerSelect(player.id)}
@@ -135,7 +134,7 @@ export const WhoSaidItScreen: React.FC<WhoSaidItScreenProps> = ({
           {revealed && (
             <Animated.View entering={FadeInDown.duration(400)} style={styles.resultContainer}>
               <Text style={PLAYERS.find(p => p.id === selectedPlayer)?.name === currentQuote.saidBy ? styles.resultCorrect : styles.resultWrong}>
-                {PLAYERS.find(p => p.id === selectedPlayer)?.name === currentQuote.saidBy ? '🎉 Correct!' : `❌ It was ${currentQuote.saidBy}!`}
+                {PLAYERS.find(p => p.id === selectedPlayer)?.name === currentQuote.saidBy ? 'Correct!' : \It was \!\}
               </Text>
             </Animated.View>
           )}
@@ -171,6 +170,3 @@ const styles = StyleSheet.create({
 });
 
 export default WhoSaidItScreen;
-
-
-

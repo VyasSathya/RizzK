@@ -1,4 +1,4 @@
-/**
+﻿/**
  * HotTakeGameScreen - "Most Likely To" voting game
  * Players vote on who is most likely to do something
  */
@@ -35,11 +35,11 @@ const PROMPTS = [
 ];
 
 const PLAYERS = [
-  { id: '1', name: 'Maya', avatar: '👩', gender: 'female' as const },
-  { id: '2', name: 'Alex', avatar: '👨', gender: 'male' as const },
-  { id: '3', name: 'Sam', avatar: '🧔', gender: 'male' as const },
-  { id: '4', name: 'Jordan', avatar: '👱‍♀️', gender: 'female' as const },
-  { id: '5', name: 'Taylor', avatar: '👨‍🦱', gender: 'male' as const },
+  { id: '1', name: 'Maya', gender: 'female' as const },
+  { id: '2', name: 'Alex', gender: 'male' as const },
+  { id: '3', name: 'Sam', gender: 'male' as const },
+  { id: '4', name: 'Jordan', gender: 'female' as const },
+  { id: '5', name: 'Taylor', gender: 'male' as const },
 ];
 
 export const HotTakeGameScreen: React.FC<HotTakeGameScreenProps> = ({
@@ -77,14 +77,13 @@ export const HotTakeGameScreen: React.FC<HotTakeGameScreenProps> = ({
   const handleVoteSubmit = () => {
     if (!selectedPlayer) return;
     HapticService.medium();
-    
-    // Simulate other players voting
+
     const newVotes: Record<string, number> = {};
     PLAYERS.forEach(p => {
       newVotes[p.id] = Math.floor(Math.random() * 3);
     });
     newVotes[selectedPlayer] = (newVotes[selectedPlayer] || 0) + 1;
-    
+
     setVotes(newVotes);
     setHasVoted(true);
   };
@@ -110,7 +109,7 @@ export const HotTakeGameScreen: React.FC<HotTakeGameScreenProps> = ({
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
           <GameHeader
             title="Hot Take"
-            icon="🔥"
+            icon="award"
             currentRound={currentRound}
             totalRounds={totalRounds}
             timeLeft={timeLeft}
@@ -131,7 +130,6 @@ export const HotTakeGameScreen: React.FC<HotTakeGameScreenProps> = ({
               <PlayerVoteCard
                 key={player.id}
                 name={player.name}
-                avatar={player.avatar}
                 gender={player.gender}
                 isSelected={selectedPlayer === player.id}
                 voteCount={votes[player.id] || 0}
@@ -180,6 +178,3 @@ const styles = StyleSheet.create({
 });
 
 export default HotTakeGameScreen;
-
-
-

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * GameLobbyScreen - Pre-game lobby where players wait
  * Matches the HTML prototype lobby screen
  */
@@ -13,13 +13,12 @@ import {
 } from 'react-native';
 import Animated, { FadeInDown, FadeIn, useAnimatedStyle, withRepeat, withTiming } from '../shims/reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
-import { GradientBackground, Card } from '../components/common';
+import { GradientBackground, Card, Avatar } from '../components/common';
 import { colors, spacing, borderRadius } from '../theme';
 
 interface Player {
   id: string;
   name: string;
-  avatar: string;
   gender: 'male' | 'female';
 }
 
@@ -29,29 +28,18 @@ interface GameLobbyScreenProps {
 }
 
 const MOCK_PLAYERS: Player[] = [
-  { id: '1', name: 'Sarah', avatar: '👩', gender: 'female' },
-  { id: '2', name: 'Mike', avatar: '👨', gender: 'male' },
-  { id: '3', name: 'Emma', avatar: '👩‍🦰', gender: 'female' },
-  { id: '4', name: 'Jake', avatar: '🧔', gender: 'male' },
-  { id: '5', name: 'Lily', avatar: '👱‍♀️', gender: 'female' },
-  { id: '6', name: 'Alex', avatar: '👨‍🦱', gender: 'male' },
+  { id: '1', name: 'Sarah', gender: 'female' },
+  { id: '2', name: 'Mike', gender: 'male' },
+  { id: '3', name: 'Emma', gender: 'female' },
+  { id: '4', name: 'Jake', gender: 'male' },
+  { id: '5', name: 'Lily', gender: 'female' },
+  { id: '6', name: 'Alex', gender: 'male' },
 ];
 
 const PlayerAvatar: React.FC<{ player: Player; delay: number }> = ({ player, delay }) => {
-  const gradientColors = player.gender === 'female' 
-    ? [colors.primary, colors.primaryLight] 
-    : [colors.maleGradientStart, colors.maleGradientEnd];
-
   return (
     <Animated.View entering={FadeInDown.delay(delay).duration(400)} style={styles.playerContainer}>
-      <LinearGradient
-        colors={gradientColors}
-        style={styles.avatarGradient}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-      >
-        <Text style={styles.avatarEmoji}>{player.avatar}</Text>
-      </LinearGradient>
+      <Avatar name={player.name} size={60} gender={player.gender} />
       <Text style={styles.playerName}>{player.name}</Text>
     </Animated.View>
   );
@@ -118,7 +106,7 @@ export const GameLobbyScreen: React.FC<GameLobbyScreenProps> = ({
           {/* Info */}
           <Animated.View entering={FadeInDown.delay(800).duration(600)} style={styles.infoContainer}>
             <Text style={styles.infoText}>
-              🎮 7 games • ⏱️ ~90 minutes • 💕 Match at the end
+              7 games | ~90 minutes | Match at the end
             </Text>
           </Animated.View>
         </View>
@@ -142,13 +130,9 @@ const styles = StyleSheet.create({
   playersTitle: { fontSize: 16, fontWeight: '600', color: colors.text, textAlign: 'center', marginBottom: 20 },
   playersGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 15 },
   playerContainer: { alignItems: 'center', width: 80 },
-  avatarGradient: { width: 60, height: 60, borderRadius: 30, alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
-  avatarEmoji: { fontSize: 30 },
-  playerName: { fontSize: 14, color: colors.text },
+  playerName: { fontSize: 14, color: colors.text, marginTop: 8 },
   infoContainer: { alignItems: 'center' },
   infoText: { fontSize: 14, color: colors.textSecondary },
 });
 
 export default GameLobbyScreen;
-
-

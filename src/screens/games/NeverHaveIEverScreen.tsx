@@ -1,4 +1,4 @@
-/**
+﻿/**
  * NeverHaveIEverScreen - Never Have I Ever game
  * Players reveal if they've done something
  */
@@ -12,7 +12,7 @@ import {
   StatusBar,
 } from 'react-native';
 import Animated, { FadeIn, SlideInRight, FadeInDown } from '../../shims/reanimated';
-import { GradientBackground, Button, Card } from '../../components/common';
+import { GradientBackground, Button, Card, Avatar } from '../../components/common';
 import { GameHeader } from '../../components/games';
 import { colors, spacing, borderRadius } from '../../theme';
 import { HapticService } from '../../services/haptics';
@@ -34,11 +34,11 @@ const PROMPTS = [
 ];
 
 const PLAYERS = [
-  { name: 'Maya', avatar: '👩' },
-  { name: 'Alex', avatar: '👨' },
-  { name: 'Sam', avatar: '🧔' },
-  { name: 'Jordan', avatar: '👱‍♀️' },
-  { name: 'Taylor', avatar: '👨‍🦱' },
+  { name: 'Maya', gender: 'female' as const },
+  { name: 'Alex', gender: 'male' as const },
+  { name: 'Sam', gender: 'male' as const },
+  { name: 'Jordan', gender: 'female' as const },
+  { name: 'Taylor', gender: 'male' as const },
 ];
 
 export const NeverHaveIEverScreen: React.FC<NeverHaveIEverScreenProps> = ({
@@ -76,7 +76,6 @@ export const NeverHaveIEverScreen: React.FC<NeverHaveIEverScreenProps> = ({
 
   const handleReveal = () => {
     HapticService.medium();
-    // Simulate other players' answers
     const answers: Record<string, boolean> = {};
     PLAYERS.forEach(p => {
       answers[p.name] = Math.random() > 0.5;
@@ -108,7 +107,7 @@ export const NeverHaveIEverScreen: React.FC<NeverHaveIEverScreenProps> = ({
         <View style={styles.content}>
           <GameHeader
             title="Never Have I Ever"
-            icon="🙈"
+            icon="heart"
             currentRound={currentRound}
             totalRounds={totalRounds}
             timeLeft={timeLeft}
@@ -126,13 +125,13 @@ export const NeverHaveIEverScreen: React.FC<NeverHaveIEverScreenProps> = ({
           {!revealed && (
             <Animated.View entering={FadeIn.duration(400)} style={styles.answerButtons}>
               <Button
-                title="I Have 😏"
+                title="I Have"
                 onPress={() => handleAnswer(true)}
                 variant={myAnswer === true ? 'primary' : 'secondary'}
                 style={styles.answerButton}
               />
               <Button
-                title="Never 😇"
+                title="Never"
                 onPress={() => handleAnswer(false)}
                 variant={myAnswer === false ? 'primary' : 'secondary'}
                 style={styles.answerButton}
@@ -145,22 +144,22 @@ export const NeverHaveIEverScreen: React.FC<NeverHaveIEverScreenProps> = ({
             <Animated.View entering={FadeInDown.duration(400)}>
               <Card variant="subtle" style={styles.resultsCard}>
                 <Text style={styles.resultsTitle}>
-                  {guiltyCount} {guiltyCount === 1 ? 'person' : 'people'} guilty! 😏
+                  {guiltyCount} {guiltyCount === 1 ? 'person' : 'people'} guilty!
                 </Text>
                 <View style={styles.playerResults}>
                   <View style={styles.resultRow}>
-                    <Text style={styles.resultAvatar}>😊</Text>
+                    <Avatar name="You" size={30} />
                     <Text style={styles.resultName}>You</Text>
                     <Text style={myAnswer ? styles.guilty : styles.innocent}>
-                      {myAnswer ? '😏 Guilty' : '😇 Innocent'}
+                      {myAnswer ? 'Guilty' : 'Innocent'}
                     </Text>
                   </View>
                   {PLAYERS.map((player) => (
                     <View key={player.name} style={styles.resultRow}>
-                      <Text style={styles.resultAvatar}>{player.avatar}</Text>
+                      <Avatar name={player.name} size={30} gender={player.gender} />
                       <Text style={styles.resultName}>{player.name}</Text>
                       <Text style={playerAnswers[player.name] ? styles.guilty : styles.innocent}>
-                        {playerAnswers[player.name] ? '😏 Guilty' : '😇 Innocent'}
+                        {playerAnswers[player.name] ? 'Guilty' : 'Innocent'}
                       </Text>
                     </View>
                   ))}
@@ -195,7 +194,6 @@ const styles = StyleSheet.create({
   resultsTitle: { fontSize: 20, fontWeight: '700', color: colors.primary, textAlign: 'center', marginBottom: 20 },
   playerResults: { gap: 12 },
   resultRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  resultAvatar: { fontSize: 24 },
   resultName: { flex: 1, fontSize: 16, color: colors.text },
   guilty: { fontSize: 14, color: colors.primary },
   innocent: { fontSize: 14, color: colors.success },
@@ -204,6 +202,3 @@ const styles = StyleSheet.create({
 });
 
 export default NeverHaveIEverScreen;
-
-
-

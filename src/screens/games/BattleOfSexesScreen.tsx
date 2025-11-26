@@ -1,4 +1,4 @@
-/**
+﻿/**
  * BattleOfSexesScreen - Team trivia battle
  * Men vs Women trivia competition
  */
@@ -95,17 +95,17 @@ export const BattleOfSexesScreen: React.FC<BattleOfSexesScreenProps> = ({
       <StatusBar barStyle="light-content" />
       <SafeAreaView style={styles.container}>
         <View style={styles.content}>
-          <GameHeader title="Battle of Sexes" icon="⚔️" currentRound={currentRound} totalRounds={totalRounds} timeLeft={timeLeft} showTimer={!revealed} />
+          <GameHeader title="Battle of Sexes" icon="users" currentRound={currentRound} totalRounds={totalRounds} timeLeft={timeLeft} showTimer={!revealed} />
 
           {/* Score Board */}
           <View style={styles.scoreBoard}>
             <LinearGradient colors={[colors.maleGradientStart, colors.maleGradientEnd]} style={styles.scoreTeam}>
-              <Text style={styles.teamLabel}>👨 Men</Text>
+              <Text style={styles.teamLabel}>Men</Text>
               <Text style={styles.teamScore}>{scores.men}</Text>
             </LinearGradient>
             <Text style={styles.vs}>VS</Text>
             <LinearGradient colors={[colors.primary, colors.primaryLight]} style={styles.scoreTeam}>
-              <Text style={styles.teamLabel}>👩 Women</Text>
+              <Text style={styles.teamLabel}>Women</Text>
               <Text style={styles.teamScore}>{scores.women}</Text>
             </LinearGradient>
           </View>
@@ -114,7 +114,7 @@ export const BattleOfSexesScreen: React.FC<BattleOfSexesScreenProps> = ({
           <Animated.View key={currentRound} entering={SlideInRight.duration(400)}>
             <Card variant="elevated" style={styles.questionCard}>
               <Text style={styles.forTeam}>
-                {currentQ.forTeam === 'men' ? '👨 Men answer:' : '👩 Women answer:'}
+                {currentQ.forTeam === 'men' ? 'Men answer:' : 'Women answer:'}
               </Text>
               <Text style={styles.question}>{currentQ.q}</Text>
               <View style={styles.options}>
@@ -169,6 +169,3 @@ const styles = StyleSheet.create({
 });
 
 export default BattleOfSexesScreen;
-
-
-

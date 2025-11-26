@@ -1,4 +1,4 @@
-/**
+﻿/**
  * SparkGameScreen - Deep conversation questions
  * Players take turns answering thought-provoking questions
  */
@@ -12,7 +12,7 @@ import {
   StatusBar,
 } from 'react-native';
 import Animated, { FadeIn, FadeInUp, SlideInRight, SlideOutLeft } from '../../shims/reanimated';
-import { GradientBackground, Button, Card } from '../../components/common';
+import { GradientBackground, Button, Card, Avatar } from '../../components/common';
 import { GameHeader } from '../../components/games';
 import { colors, spacing, borderRadius } from '../../theme';
 import { HapticService } from '../../services/haptics';
@@ -36,12 +36,12 @@ const QUESTIONS = [
 ];
 
 const PLAYERS = [
-  { name: 'You', avatar: '😊' },
-  { name: 'Maya', avatar: '👩' },
-  { name: 'Alex', avatar: '👨' },
-  { name: 'Sam', avatar: '🧔' },
-  { name: 'Jordan', avatar: '👱‍♀️' },
-  { name: 'Taylor', avatar: '👨‍🦱' },
+  { name: 'You' },
+  { name: 'Maya', gender: 'female' as const },
+  { name: 'Alex', gender: 'male' as const },
+  { name: 'Sam', gender: 'male' as const },
+  { name: 'Jordan', gender: 'female' as const },
+  { name: 'Taylor', gender: 'male' as const },
 ];
 
 export const SparkGameScreen: React.FC<SparkGameScreenProps> = ({
@@ -99,7 +99,7 @@ export const SparkGameScreen: React.FC<SparkGameScreenProps> = ({
         <View style={styles.content}>
           <GameHeader
             title="Spark"
-            icon="⚡"
+            icon="zap"
             currentRound={currentRound}
             totalRounds={totalRounds}
             timeLeft={timeLeft}
@@ -109,7 +109,7 @@ export const SparkGameScreen: React.FC<SparkGameScreenProps> = ({
           <Animated.View entering={FadeIn.duration(400)} style={styles.playerSection}>
             <Text style={styles.playerLabel}>Now answering:</Text>
             <View style={styles.playerInfo}>
-              <Text style={styles.playerAvatar}>{currentPlayer.avatar}</Text>
+              <Avatar name={currentPlayer.name} size={50} gender={currentPlayer.gender} />
               <Text style={styles.playerName}>{currentPlayer.name}</Text>
             </View>
           </Animated.View>
@@ -149,7 +149,6 @@ const styles = StyleSheet.create({
   playerSection: { alignItems: 'center', marginBottom: 25 },
   playerLabel: { fontSize: 14, color: colors.textSecondary, marginBottom: 10 },
   playerInfo: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  playerAvatar: { fontSize: 40 },
   playerName: { fontSize: 24, fontWeight: '700', color: colors.text },
   questionCard: { paddingVertical: 40, alignItems: 'center' },
   questionLabel: { fontSize: 12, color: colors.primary, fontWeight: '600', letterSpacing: 2, marginBottom: 15 },
@@ -159,6 +158,3 @@ const styles = StyleSheet.create({
 });
 
 export default SparkGameScreen;
-
-
-
