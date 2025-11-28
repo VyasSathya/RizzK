@@ -1,6 +1,6 @@
 /**
  * PersonalityQuizScreen - Personality quiz for matching
- * Matches the HTML prototype quiz screen
+ * Connected to Supabase
  */
 
 import React, { useState } from 'react';
@@ -14,8 +14,9 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn, FadeInRight, FadeOutLeft } from '../shims/reanimated';
 import { GradientBackground, Button, Card } from '../components/common';
-import { colors, spacing, borderRadius , fonts } from '../theme';
+import { colors, spacing, borderRadius, fonts } from '../theme';
 import { HapticService } from '../services/haptics';
+import { saveQuizResponses } from '../services/quiz';
 
 interface PersonalityQuizScreenProps {
   onComplete: (answers: Record<string, string>) => void;
@@ -63,6 +64,10 @@ export const PersonalityQuizScreen: React.FC<PersonalityQuizScreenProps> = ({
       setCurrentIndex(currentIndex + 1);
       setSelectedOption(null);
     } else {
+      // Save to Supabase
+      saveQuizResponses(newAnswers).catch(err =>
+        console.warn('Failed to save quiz:', err)
+      );
       HapticService.success();
       onComplete(newAnswers);
     }

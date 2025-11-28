@@ -1,20 +1,26 @@
 /**
  * MatchSelectionScreen - Select who you want to match with
+ * Connected to Supabase
  */
 
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, StatusBar } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, StatusBar, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeInDown, FadeIn } from '../shims/reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { GradientBackground, Button, Avatar, Icon } from '../components/common';
-import { colors, spacing, borderRadius, shadows , fonts } from '../theme';
+import { colors, spacing, borderRadius, shadows, fonts } from '../theme';
 import { HapticService } from '../services/haptics';
+import { getOtherPlayers } from '../services/lobby';
+import { createMatch } from '../services/matches';
 
 interface Player { id: string; name: string; age: number; gender: 'male' | 'female'; matchScore: number; }
-interface MatchSelectionScreenProps { onSubmit: (selectedIds: string[]) => void; }
+interface MatchSelectionScreenProps {
+  eventId?: string;
+  onSubmit: (selectedIds: string[]) => void;
+}
 
-const PLAYERS: Player[] = [
+const MOCK_PLAYERS: Player[] = [
   { id: '1', name: 'Maya', age: 24, gender: 'female', matchScore: 88 },
   { id: '2', name: 'Alex', age: 26, gender: 'male', matchScore: 92 },
   { id: '3', name: 'Sam', age: 25, gender: 'male', matchScore: 85 },
@@ -40,10 +46,58 @@ const PlayerCard: React.FC<{ player: Player; isSelected: boolean; onPress: () =>
   </Animated.View>
 );
 
-export const MatchSelectionScreen: React.FC<MatchSelectionScreenProps> = ({ onSubmit }) => {
+export const MatchSelectionScreen: React.FC<MatchSelectionScreenProps> = ({ eventId, onSubmit }) => {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const togglePlayer = (id: string) => { selectedIds.includes(id) ? setSelectedIds(selectedIds.filter(i => i !== id)) : setSelectedIds([...selectedIds, id]); };
-  const handleSubmit = () => { HapticService.success(); onSubmit(selectedIds); };
+  const [players, setPlayers] = useState<Player[]>(MOCK_PLAYERS);
+  const [loading, setLoading] = useState(!!eventId);
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (eventId) loadPlayers();
+  }, [eventId]);
+
+  const loadPlayers = async () => {
+    try {
+      const attendees = await getOtherPlayers(eventId!);
+      if (attendees.length > 0) {
+        setPlayers(attendees.map(a => ({
+          id: a.user_id,
+          name: a.profile?.full_name || 'Player',
+          age: 25,
+          gender: (a.profile?.gender as 'male' | 'female') || 'female',
+          matchScore: Math.floor(70 + Math.random() * 25),
+        })));
+      }
+    } catch (error) {
+      console.warn('Failed to load players:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const togglePlayer = (id: string) => {
+    selectedIds.includes(id) ? setSelectedIds(selectedIds.filter(i => i !== id)) : setSelectedIds([...selectedIds, id]);
+  };
+
+  const handleSubmit = async () => {
+    setSubmitting(true);
+    try {
+      // Create matches for each selected player
+      if (eventId) {
+        for (const playerId of selectedIds) {
+          await createMatch(playerId, eventId);
+        }
+      }
+      HapticService.success();
+      onSubmit(selectedIds);
+    } catch (error) {
+      console.warn('Failed to create matches:', error);
+      HapticService.success();
+      onSubmit(selectedIds);
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <GradientBackground variant="intense">
@@ -55,9 +109,15 @@ export const MatchSelectionScreen: React.FC<MatchSelectionScreenProps> = ({ onSu
             <Text style={styles.title}>Who Did You Vibe With?</Text>
             <Text style={styles.subtitle}>Select the people you would like to match with. If they select you too, it is a match!</Text>
           </Animated.View>
-          <View style={styles.playersList}>{PLAYERS.map((player, index) => (<PlayerCard key={player.id} player={player} isSelected={selectedIds.includes(player.id)} onPress={() => togglePlayer(player.id)} delay={200 + index * 100} />))}</View>
-          <Text style={styles.selectionCount}>{selectedIds.length} {selectedIds.length === 1 ? 'person' : 'people'} selected</Text>
-          <Button title={selectedIds.length > 0 ? 'Submit Matches' : 'Skip for Now'} onPress={handleSubmit} variant="primary" size="large" haptic="success" />
+          {loading ? (
+            <ActivityIndicator size="large" color={colors.primary} style={{ marginVertical: 40 }} />
+          ) : (
+            <>
+              <View style={styles.playersList}>{players.map((player, index) => (<PlayerCard key={player.id} player={player} isSelected={selectedIds.includes(player.id)} onPress={() => togglePlayer(player.id)} delay={200 + index * 100} />))}</View>
+              <Text style={styles.selectionCount}>{selectedIds.length} {selectedIds.length === 1 ? 'person' : 'people'} selected</Text>
+              <Button title={submitting ? 'Submitting...' : selectedIds.length > 0 ? 'Submit Matches' : 'Skip for Now'} onPress={handleSubmit} variant="primary" size="large" haptic="success" disabled={submitting} />
+            </>
+          )}
         </ScrollView>
       </SafeAreaView>
     </GradientBackground>

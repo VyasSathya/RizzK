@@ -1,6 +1,6 @@
 /**
  * GameLobbyScreen - Pre-game lobby where players wait
- * Matches the HTML prototype lobby screen
+ * Connected to Supabase
  */
 
 import React, { useState, useEffect } from 'react';
@@ -9,12 +9,14 @@ import {
   Text,
   StyleSheet,
   StatusBar,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeInDown, FadeIn, useAnimatedStyle, withRepeat, withTiming } from '../shims/reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { GradientBackground, Card, Avatar } from '../components/common';
-import { colors, spacing, borderRadius , fonts } from '../theme';
+import { colors, spacing, borderRadius, fonts } from '../theme';
+import { getEventAttendees, Attendee } from '../services/lobby';
 
 interface Player {
   id: string;
@@ -23,7 +25,8 @@ interface Player {
 }
 
 interface GameLobbyScreenProps {
-  players: Player[];
+  eventId?: string;
+  players?: Player[];
   onGameStart: () => void;
 }
 
@@ -46,11 +49,37 @@ const PlayerAvatar: React.FC<{ player: Player; delay: number }> = ({ player, del
 };
 
 export const GameLobbyScreen: React.FC<GameLobbyScreenProps> = ({
-  players = MOCK_PLAYERS,
+  eventId,
+  players: propPlayers,
   onGameStart,
 }) => {
   const [countdown, setCountdown] = useState(30);
   const [gameStarted, setGameStarted] = useState(false);
+  const [players, setPlayers] = useState<Player[]>(propPlayers || MOCK_PLAYERS);
+  const [loading, setLoading] = useState(!propPlayers);
+
+  useEffect(() => {
+    if (eventId && !propPlayers) {
+      loadPlayers();
+    }
+  }, [eventId]);
+
+  const loadPlayers = async () => {
+    try {
+      const attendees = await getEventAttendees(eventId!);
+      if (attendees.length > 0) {
+        setPlayers(attendees.map(a => ({
+          id: a.user_id,
+          name: a.profile?.full_name || 'Player',
+          gender: (a.profile?.gender as 'male' | 'female') || 'male',
+        })));
+      }
+    } catch (error) {
+      console.warn('Failed to load players:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (gameStarted) {
