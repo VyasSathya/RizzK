@@ -1,6 +1,6 @@
 /**
  * SparkGameScreen - Deep conversation questions
- * Players take turns answering thought-provoking questions
+ * Enhanced with full UX flow
  */
 
 import React, { useState, useEffect } from 'react';
@@ -15,7 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn, SlideInRight } from '../../shims/reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { GradientBackground, Button, Card, Avatar, Icon } from '../../components/common';
-import { GameHeader } from '../../components/games';
+import { GameHeader, GameIntro, PlayerTurnTransition, RoundTransition, GameResults } from '../../components/games';
 import { colors, spacing, borderRadius, shadows, fonts } from '../../theme';
 import { HapticService } from '../../services/haptics';
 
@@ -50,15 +50,19 @@ export const SparkGameScreen: React.FC<SparkGameScreenProps> = ({
   onComplete,
   onBack,
 }) => {
+  const [phase, setPhase] = useState<'intro' | 'playing' | 'playerTurn' | 'transition' | 'results'>('intro');
   const [currentRound, setCurrentRound] = useState(1);
   const [timeLeft, setTimeLeft] = useState(60);
   const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
+  const [score, setScore] = useState(0);
+  const [chipsEarned, setChipsEarned] = useState(0);
   const totalRounds = 5;
 
   const currentQuestion = QUESTIONS[(currentRound - 1) % QUESTIONS.length];
   const currentPlayer = PLAYERS[currentPlayerIndex];
 
   useEffect(() => {
+    if (phase !== 'playing') return;
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
@@ -68,35 +72,97 @@ export const SparkGameScreen: React.FC<SparkGameScreenProps> = ({
         return prev - 1;
       });
     }, 1000);
-
     return () => clearInterval(timer);
-  }, [currentPlayerIndex]);
+  }, [phase, currentPlayerIndex]);
 
   const handleNextPlayer = () => {
     HapticService.light();
+    setScore(s => s + 10);
+    setChipsEarned(c => c + 2);
     if (currentPlayerIndex < PLAYERS.length - 1) {
-      setCurrentPlayerIndex(currentPlayerIndex + 1);
-      setTimeLeft(60);
+      setPhase('playerTurn');
     } else {
       handleNextRound();
     }
   };
 
+  const startNextPlayer = () => {
+    setCurrentPlayerIndex(currentPlayerIndex + 1);
+    setTimeLeft(60);
+    setPhase('playing');
+  };
+
   const handleNextRound = () => {
-    HapticService.medium();
     if (currentRound < totalRounds) {
-      setCurrentRound(currentRound + 1);
-      setCurrentPlayerIndex(0);
-      setTimeLeft(60);
+      setPhase('transition');
     } else {
-      HapticService.success();
-      onComplete();
+      setPhase('results');
     }
   };
+
+  const startNextRound = () => {
+    setCurrentRound(currentRound + 1);
+    setCurrentPlayerIndex(0);
+    setTimeLeft(60);
+    setPhase('playing');
+  };
+
+  // Results screen
+  if (phase === 'results') {
+    return (
+      <GradientBackground>
+        <StatusBar barStyle="light-content" />
+        <SafeAreaView style={styles.container} edges={['bottom', 'left', 'right']}>
+          <GameResults
+            gameName="Spark"
+            gameIcon="zap"
+            score={score}
+            chipsEarned={chipsEarned}
+            stats={[
+              { label: 'Rounds Played', value: totalRounds },
+              { label: 'Questions Answered', value: totalRounds * PLAYERS.length },
+            ]}
+            onContinue={onComplete}
+            onPlayAgain={() => {
+              setPhase('intro');
+              setCurrentRound(1);
+              setCurrentPlayerIndex(0);
+              setScore(0);
+              setChipsEarned(0);
+            }}
+          />
+        </SafeAreaView>
+      </GradientBackground>
+    );
+  }
 
   return (
     <GradientBackground>
       <StatusBar barStyle="light-content" />
+
+      <GameIntro
+        visible={phase === 'intro'}
+        gameName="Spark"
+        gameIcon="zap"
+        description="Deep conversations that spark real connections. Take turns answering thought-provoking questions."
+        rules={['Listen to each answer', 'Be genuine & curious', 'Build on the conversation']}
+        onComplete={() => setPhase('playing')}
+      />
+
+      <PlayerTurnTransition
+        visible={phase === 'playerTurn'}
+        playerName={PLAYERS[(currentPlayerIndex + 1) % PLAYERS.length].name}
+        onComplete={startNextPlayer}
+      />
+
+      <RoundTransition
+        visible={phase === 'transition'}
+        currentRound={currentRound + 1}
+        totalRounds={totalRounds}
+        message="New question coming up!"
+        onComplete={startNextRound}
+      />
+
       <SafeAreaView style={styles.container} edges={['bottom', 'left', 'right']}>
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           <GameHeader
@@ -105,6 +171,7 @@ export const SparkGameScreen: React.FC<SparkGameScreenProps> = ({
             currentRound={currentRound}
             totalRounds={totalRounds}
             timeLeft={timeLeft}
+            showTimer={phase === 'playing'}
           />
 
           {/* Current Player */}
@@ -137,8 +204,8 @@ export const SparkGameScreen: React.FC<SparkGameScreenProps> = ({
           {/* Action Buttons */}
           <View style={styles.buttonContainer}>
             <Button
-              title={currentPlayerIndex < PLAYERS.length - 1 ? 'Next Person' : 'Next Round'}
-              onPress={currentPlayerIndex < PLAYERS.length - 1 ? handleNextPlayer : handleNextRound}
+              title={currentPlayerIndex < PLAYERS.length - 1 ? '✓ Done - Next Person' : '✓ Done - Next Round'}
+              onPress={handleNextPlayer}
               variant="primary"
               size="large"
               haptic="medium"

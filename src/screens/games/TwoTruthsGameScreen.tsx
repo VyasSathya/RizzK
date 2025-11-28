@@ -1,6 +1,6 @@
 /**
  * TwoTruthsGameScreen - Two Truths and a Lie
- * Players guess which statement is the lie
+ * Enhanced with full UX flow: intro → play → wait → reveal → results
  */
 
 import React, { useState, useEffect } from 'react';
@@ -15,7 +15,13 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn, SlideInRight, FadeInDown } from '../../shims/reanimated';
 import { GradientBackground, Button, Card, Avatar } from '../../components/common';
-import { GameHeader } from '../../components/games';
+import {
+  GameHeader,
+  GameIntro,
+  WaitingOverlay,
+  RoundTransition,
+  GameResults
+} from '../../components/games';
 import { colors, spacing, borderRadius, fonts } from '../../theme';
 import { HapticService } from '../../services/haptics';
 
@@ -36,16 +42,20 @@ export const TwoTruthsGameScreen: React.FC<TwoTruthsGameScreenProps> = ({
   onComplete,
   onBack,
 }) => {
+  // Game phases
+  const [phase, setPhase] = useState<'intro' | 'playing' | 'waiting' | 'reveal' | 'transition' | 'results'>('intro');
   const [currentRound, setCurrentRound] = useState(1);
   const [timeLeft, setTimeLeft] = useState(30);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
-  const [revealed, setRevealed] = useState(false);
+  const [score, setScore] = useState(0);
+  const [chipsEarned, setChipsEarned] = useState(0);
   const totalRounds = ROUNDS.length;
 
   const currentData = ROUNDS[(currentRound - 1) % ROUNDS.length];
 
+  // Timer for playing phase
   useEffect(() => {
-    if (revealed) return;
+    if (phase !== 'playing') return;
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
@@ -56,39 +66,49 @@ export const TwoTruthsGameScreen: React.FC<TwoTruthsGameScreenProps> = ({
       });
     }, 1000);
     return () => clearInterval(timer);
-  }, [revealed]);
+  }, [phase, currentRound]);
 
   const handleSelect = (index: number) => {
-    if (revealed) return;
+    if (phase !== 'playing') return;
     HapticService.light();
     setSelectedIndex(index);
   };
 
   const handleReveal = () => {
     HapticService.medium();
-    setRevealed(true);
-    if (selectedIndex === currentData.lie) {
-      HapticService.success();
-    } else {
-      HapticService.error();
-    }
+    setPhase('waiting');
+
+    // Simulate waiting for others (1.5-3s)
+    setTimeout(() => {
+      const correct = selectedIndex === currentData.lie;
+      if (correct) {
+        setScore(s => s + 100);
+        setChipsEarned(c => c + 10);
+        HapticService.success();
+      } else {
+        HapticService.error();
+      }
+      setPhase('reveal');
+    }, 1500 + Math.random() * 1500);
   };
 
   const handleNextRound = () => {
-    HapticService.medium();
     if (currentRound < totalRounds) {
-      setCurrentRound(currentRound + 1);
-      setSelectedIndex(null);
-      setRevealed(false);
-      setTimeLeft(30);
+      setPhase('transition');
     } else {
-      HapticService.success();
-      onComplete();
+      setPhase('results');
     }
   };
 
+  const startNextRound = () => {
+    setCurrentRound(currentRound + 1);
+    setSelectedIndex(null);
+    setTimeLeft(30);
+    setPhase('playing');
+  };
+
   const getStatementStyle = (index: number) => {
-    if (!revealed) {
+    if (phase === 'playing' || phase === 'waiting') {
       return selectedIndex === index ? styles.statementSelected : styles.statement;
     }
     if (index === currentData.lie) {
@@ -97,9 +117,64 @@ export const TwoTruthsGameScreen: React.FC<TwoTruthsGameScreenProps> = ({
     return styles.statementTruth;
   };
 
+  // Show results screen
+  if (phase === 'results') {
+    return (
+      <GradientBackground>
+        <StatusBar barStyle="light-content" />
+        <SafeAreaView style={styles.container} edges={['bottom', 'left', 'right']}>
+          <GameResults
+            gameName="Two Truths & a Lie"
+            gameIcon="eye"
+            score={score}
+            chipsEarned={chipsEarned}
+            stats={[
+              { label: 'Rounds Played', value: totalRounds },
+              { label: 'Correct Guesses', value: Math.floor(score / 100) },
+            ]}
+            onContinue={onComplete}
+            onPlayAgain={() => {
+              setPhase('intro');
+              setCurrentRound(1);
+              setScore(0);
+              setChipsEarned(0);
+            }}
+          />
+        </SafeAreaView>
+      </GradientBackground>
+    );
+  }
+
   return (
     <GradientBackground>
       <StatusBar barStyle="light-content" />
+
+      {/* Game Intro */}
+      <GameIntro
+        visible={phase === 'intro'}
+        gameName="Two Truths & a Lie"
+        gameIcon="eye"
+        description="Can you spot the lie? Each player shares 3 statements - your job is to guess which one is false!"
+        rules={['One statement is a lie', 'Pick which you think is false', 'Faster = more points']}
+        onComplete={() => setPhase('playing')}
+      />
+
+      {/* Waiting Overlay */}
+      <WaitingOverlay
+        visible={phase === 'waiting'}
+        message="Waiting for others..."
+        players={ROUNDS.map(r => ({ id: r.player, name: r.player, gender: r.gender }))}
+      />
+
+      {/* Round Transition */}
+      <RoundTransition
+        visible={phase === 'transition'}
+        currentRound={currentRound + 1}
+        totalRounds={totalRounds}
+        message={`${ROUNDS[currentRound % ROUNDS.length].player}'s turn next!`}
+        onComplete={startNextRound}
+      />
+
       <SafeAreaView style={styles.container} edges={['bottom', 'left', 'right']}>
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           <GameHeader
@@ -108,7 +183,7 @@ export const TwoTruthsGameScreen: React.FC<TwoTruthsGameScreenProps> = ({
             currentRound={currentRound}
             totalRounds={totalRounds}
             timeLeft={timeLeft}
-            showTimer={!revealed}
+            showTimer={phase === 'playing'}
           />
 
           {/* Current Player */}
@@ -127,11 +202,11 @@ export const TwoTruthsGameScreen: React.FC<TwoTruthsGameScreenProps> = ({
                   style={getStatementStyle(index)}
                   onPress={() => handleSelect(index)}
                   activeOpacity={0.7}
-                  disabled={revealed}
+                  disabled={phase !== 'playing'}
                 >
                   <Text style={styles.statementNumber}>{index + 1}</Text>
                   <Text style={styles.statementText}>{statement}</Text>
-                  {revealed && index === currentData.lie && (
+                  {phase === 'reveal' && index === currentData.lie && (
                     <Text style={styles.lieLabel}>LIE!</Text>
                   )}
                 </TouchableOpacity>
@@ -140,20 +215,21 @@ export const TwoTruthsGameScreen: React.FC<TwoTruthsGameScreenProps> = ({
           </Animated.View>
 
           {/* Result */}
-          {revealed && (
+          {phase === 'reveal' && (
             <Animated.View entering={FadeInDown.duration(400)} style={styles.resultContainer}>
               <Text style={selectedIndex === currentData.lie ? styles.resultCorrect : styles.resultWrong}>
-                {selectedIndex === currentData.lie ? 'You got it!' : 'Wrong guess!'}
+                {selectedIndex === currentData.lie ? '🎉 You got it! +10 chips' : '❌ Wrong guess!'}
               </Text>
             </Animated.View>
           )}
 
           {/* Buttons */}
           <View style={styles.buttonContainer}>
-            {!revealed ? (
+            {phase === 'playing' && (
               <Button title="Lock In Guess" onPress={handleReveal} variant="primary" disabled={selectedIndex === null} haptic="medium" />
-            ) : (
-              <Button title={currentRound < totalRounds ? 'Next Round' : 'Finish Game'} onPress={handleNextRound} variant="primary" haptic="medium" />
+            )}
+            {phase === 'reveal' && (
+              <Button title={currentRound < totalRounds ? 'Next Round' : 'See Results'} onPress={handleNextRound} variant="primary" haptic="medium" />
             )}
             <Button title="Back to Games" onPress={onBack} variant="secondary" style={styles.backButton} />
           </View>

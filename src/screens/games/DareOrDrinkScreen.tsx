@@ -1,6 +1,6 @@
 /**
  * DareOrDrinkScreen - Dare or Drink game
- * Players choose to do a dare or take a drink
+ * Enhanced with full UX flow
  */
 
 import React, { useState } from 'react';
@@ -15,7 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn, SlideInRight, FadeInDown } from '../../shims/reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { GradientBackground, Button, Card, Avatar, Icon } from '../../components/common';
-import { GameHeader } from '../../components/games';
+import { GameHeader, GameIntro, PlayerTurnTransition, RoundTransition, GameResults } from '../../components/games';
 import { colors, spacing, borderRadius, fonts } from '../../theme';
 import { HapticService } from '../../services/haptics';
 
@@ -50,10 +50,15 @@ export const DareOrDrinkScreen: React.FC<DareOrDrinkScreenProps> = ({
   onComplete,
   onBack,
 }) => {
+  const [phase, setPhase] = useState<'intro' | 'playing' | 'playerTurn' | 'transition' | 'results'>('intro');
   const [currentRound, setCurrentRound] = useState(1);
   const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
   const [choice, setChoice] = useState<'dare' | 'drink' | null>(null);
   const [showResult, setShowResult] = useState(false);
+  const [score, setScore] = useState(0);
+  const [chipsEarned, setChipsEarned] = useState(0);
+  const [daresCompleted, setDaresCompleted] = useState(0);
+  const [drinksTaken, setDrinksTaken] = useState(0);
   const totalRounds = 5;
 
   const currentDare = DARES[(currentRound - 1 + currentPlayerIndex) % DARES.length];
@@ -63,28 +68,101 @@ export const DareOrDrinkScreen: React.FC<DareOrDrinkScreenProps> = ({
     HapticService.medium();
     setChoice(selected);
     setShowResult(true);
+    if (selected === 'dare') {
+      setDaresCompleted(d => d + 1);
+      setScore(s => s + 20);
+      setChipsEarned(c => c + 5);
+    } else {
+      setDrinksTaken(d => d + 1);
+      setScore(s => s + 5);
+      setChipsEarned(c => c + 1);
+    }
   };
 
   const handleNext = () => {
     HapticService.light();
     if (currentPlayerIndex < PLAYERS.length - 1) {
-      setCurrentPlayerIndex(currentPlayerIndex + 1);
-      setChoice(null);
-      setShowResult(false);
+      setPhase('playerTurn');
     } else if (currentRound < totalRounds) {
-      setCurrentRound(currentRound + 1);
-      setCurrentPlayerIndex(0);
-      setChoice(null);
-      setShowResult(false);
+      setPhase('transition');
     } else {
-      HapticService.success();
-      onComplete();
+      setPhase('results');
     }
   };
+
+  const startNextPlayer = () => {
+    setCurrentPlayerIndex(currentPlayerIndex + 1);
+    setChoice(null);
+    setShowResult(false);
+    setPhase('playing');
+  };
+
+  const startNextRound = () => {
+    setCurrentRound(currentRound + 1);
+    setCurrentPlayerIndex(0);
+    setChoice(null);
+    setShowResult(false);
+    setPhase('playing');
+  };
+
+  // Results screen
+  if (phase === 'results') {
+    return (
+      <GradientBackground>
+        <StatusBar barStyle="light-content" />
+        <SafeAreaView style={styles.container} edges={['bottom', 'left', 'right']}>
+          <GameResults
+            gameName="Dare or Drink"
+            gameIcon="activity"
+            score={score}
+            chipsEarned={chipsEarned}
+            stats={[
+              { label: 'Dares Completed', value: daresCompleted },
+              { label: 'Drinks Taken', value: drinksTaken },
+            ]}
+            onContinue={onComplete}
+            onPlayAgain={() => {
+              setPhase('intro');
+              setCurrentRound(1);
+              setCurrentPlayerIndex(0);
+              setScore(0);
+              setChipsEarned(0);
+              setDaresCompleted(0);
+              setDrinksTaken(0);
+            }}
+          />
+        </SafeAreaView>
+      </GradientBackground>
+    );
+  }
 
   return (
     <GradientBackground>
       <StatusBar barStyle="light-content" />
+
+      <GameIntro
+        visible={phase === 'intro'}
+        gameName="Dare or Drink"
+        gameIcon="activity"
+        description="Face the dare or take a drink! No chickening out - you must choose one."
+        rules={['Read the dare', 'Do it or drink', 'No backing out!']}
+        onComplete={() => setPhase('playing')}
+      />
+
+      <PlayerTurnTransition
+        visible={phase === 'playerTurn'}
+        playerName={PLAYERS[(currentPlayerIndex + 1) % PLAYERS.length].name}
+        onComplete={startNextPlayer}
+      />
+
+      <RoundTransition
+        visible={phase === 'transition'}
+        currentRound={currentRound + 1}
+        totalRounds={totalRounds}
+        message="New round of dares!"
+        onComplete={startNextRound}
+      />
+
       <SafeAreaView style={styles.container} edges={['bottom', 'left', 'right']}>
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           <GameHeader
@@ -121,10 +199,10 @@ export const DareOrDrinkScreen: React.FC<DareOrDrinkScreenProps> = ({
           </Animated.View>
 
           {/* Choice Buttons */}
-          {!showResult && (
+          {phase === 'playing' && !showResult && (
             <Animated.View entering={FadeIn.duration(400)} style={styles.choiceButtons}>
-              <Button title="Do the Dare" onPress={() => handleChoice('dare')} variant="primary" style={styles.choiceButton} />
-              <Button title="Take a Drink" onPress={() => handleChoice('drink')} variant="secondary" style={styles.choiceButton} />
+              <Button title="🔥 Do the Dare" onPress={() => handleChoice('dare')} variant="primary" style={styles.choiceButton} />
+              <Button title="🍺 Take a Drink" onPress={() => handleChoice('drink')} variant="secondary" style={styles.choiceButton} />
             </Animated.View>
           )}
 
@@ -135,7 +213,7 @@ export const DareOrDrinkScreen: React.FC<DareOrDrinkScreenProps> = ({
                 <Icon name={choice === 'dare' ? 'zap' : 'coffee'} size={40} color={colors.primary} />
               </View>
               <Text style={styles.resultText}>
-                {choice === 'dare' ? 'Doing the dare!' : 'Taking a drink!'}
+                {choice === 'dare' ? '🔥 Doing the dare! +5 chips' : '🍺 Taking a drink! +1 chip'}
               </Text>
               <Button title="Next Player" onPress={handleNext} variant="primary" haptic="light" />
             </Animated.View>

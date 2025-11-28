@@ -1,6 +1,6 @@
 /**
  * NeverHaveIEverScreen - Never Have I Ever game
- * Players reveal if they've done something
+ * Enhanced with full UX flow
  */
 
 import React, { useState, useEffect } from 'react';
@@ -14,7 +14,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn, SlideInRight, FadeInDown } from '../../shims/reanimated';
 import { GradientBackground, Button, Card, Avatar } from '../../components/common';
-import { GameHeader } from '../../components/games';
+import { GameHeader, GameIntro, WaitingOverlay, RoundTransition, GameResults } from '../../components/games';
 import { colors, spacing, borderRadius, fonts } from '../../theme';
 import { HapticService } from '../../services/haptics';
 
@@ -46,17 +46,19 @@ export const NeverHaveIEverScreen: React.FC<NeverHaveIEverScreenProps> = ({
   onComplete,
   onBack,
 }) => {
+  const [phase, setPhase] = useState<'intro' | 'playing' | 'waiting' | 'reveal' | 'transition' | 'results'>('intro');
   const [currentRound, setCurrentRound] = useState(1);
   const [timeLeft, setTimeLeft] = useState(15);
   const [myAnswer, setMyAnswer] = useState<boolean | null>(null);
-  const [revealed, setRevealed] = useState(false);
   const [playerAnswers, setPlayerAnswers] = useState<Record<string, boolean>>({});
+  const [score, setScore] = useState(0);
+  const [chipsEarned, setChipsEarned] = useState(0);
   const totalRounds = 5;
 
   const currentPrompt = PROMPTS[(currentRound - 1) % PROMPTS.length];
 
   useEffect(() => {
-    if (revealed) return;
+    if (phase !== 'playing') return;
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
@@ -67,43 +69,103 @@ export const NeverHaveIEverScreen: React.FC<NeverHaveIEverScreenProps> = ({
       });
     }, 1000);
     return () => clearInterval(timer);
-  }, [revealed, currentRound]);
+  }, [phase, currentRound]);
 
   const handleAnswer = (answer: boolean) => {
-    if (revealed) return;
+    if (phase !== 'playing') return;
     HapticService.light();
     setMyAnswer(answer);
   };
 
   const handleReveal = () => {
+    if (myAnswer === null) return;
     HapticService.medium();
-    const answers: Record<string, boolean> = {};
-    PLAYERS.forEach(p => {
-      answers[p.name] = Math.random() > 0.5;
-    });
-    setPlayerAnswers(answers);
-    setRevealed(true);
+    setPhase('waiting');
+
+    setTimeout(() => {
+      const answers: Record<string, boolean> = {};
+      PLAYERS.forEach(p => {
+        answers[p.name] = Math.random() > 0.5;
+      });
+      setPlayerAnswers(answers);
+      setScore(s => s + 20);
+      setChipsEarned(c => c + 5);
+      setPhase('reveal');
+    }, 1500 + Math.random() * 1000);
   };
 
   const handleNextRound = () => {
-    HapticService.medium();
     if (currentRound < totalRounds) {
-      setCurrentRound(currentRound + 1);
-      setMyAnswer(null);
-      setRevealed(false);
-      setPlayerAnswers({});
-      setTimeLeft(15);
+      setPhase('transition');
     } else {
-      HapticService.success();
-      onComplete();
+      setPhase('results');
     }
+  };
+
+  const startNextRound = () => {
+    setCurrentRound(currentRound + 1);
+    setMyAnswer(null);
+    setPlayerAnswers({});
+    setTimeLeft(15);
+    setPhase('playing');
   };
 
   const guiltyCount = Object.values(playerAnswers).filter(v => v).length + (myAnswer ? 1 : 0);
 
+  // Results screen
+  if (phase === 'results') {
+    return (
+      <GradientBackground>
+        <StatusBar barStyle="light-content" />
+        <SafeAreaView style={styles.container} edges={['bottom', 'left', 'right']}>
+          <GameResults
+            gameName="Never Have I Ever"
+            gameIcon="heart"
+            score={score}
+            chipsEarned={chipsEarned}
+            stats={[
+              { label: 'Rounds Played', value: totalRounds },
+              { label: 'Confessions Made', value: Math.floor(score / 20) },
+            ]}
+            onContinue={onComplete}
+            onPlayAgain={() => {
+              setPhase('intro');
+              setCurrentRound(1);
+              setScore(0);
+              setChipsEarned(0);
+            }}
+          />
+        </SafeAreaView>
+      </GradientBackground>
+    );
+  }
+
   return (
     <GradientBackground>
       <StatusBar barStyle="light-content" />
+
+      <GameIntro
+        visible={phase === 'intro'}
+        gameName="Never Have I Ever"
+        gameIcon="heart"
+        description="Confess your secrets! Drink if you've done it, or bluff your way through."
+        rules={['Read the prompt', 'Answer honestly (or lie!)', 'See who else is guilty']}
+        onComplete={() => setPhase('playing')}
+      />
+
+      <WaitingOverlay
+        visible={phase === 'waiting'}
+        message="Collecting confessions..."
+        players={PLAYERS.map(p => ({ id: p.name, ...p }))}
+      />
+
+      <RoundTransition
+        visible={phase === 'transition'}
+        currentRound={currentRound + 1}
+        totalRounds={totalRounds}
+        onComplete={startNextRound}
+      />
+
       <SafeAreaView style={styles.container} edges={['bottom', 'left', 'right']}>
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           <GameHeader
@@ -112,7 +174,7 @@ export const NeverHaveIEverScreen: React.FC<NeverHaveIEverScreenProps> = ({
             currentRound={currentRound}
             totalRounds={totalRounds}
             timeLeft={timeLeft}
-            showTimer={!revealed}
+            showTimer={phase === 'playing'}
           />
 
           {/* Prompt */}
@@ -123,16 +185,16 @@ export const NeverHaveIEverScreen: React.FC<NeverHaveIEverScreenProps> = ({
           </Animated.View>
 
           {/* Answer Buttons */}
-          {!revealed && (
+          {phase === 'playing' && (
             <Animated.View entering={FadeIn.duration(400)} style={styles.answerButtons}>
               <Button
-                title="I Have"
+                title="🙋 I Have"
                 onPress={() => handleAnswer(true)}
                 variant={myAnswer === true ? 'primary' : 'secondary'}
                 style={styles.answerButton}
               />
               <Button
-                title="Never"
+                title="😇 Never"
                 onPress={() => handleAnswer(false)}
                 variant={myAnswer === false ? 'primary' : 'secondary'}
                 style={styles.answerButton}
@@ -141,18 +203,18 @@ export const NeverHaveIEverScreen: React.FC<NeverHaveIEverScreenProps> = ({
           )}
 
           {/* Results */}
-          {revealed && (
+          {phase === 'reveal' && (
             <Animated.View entering={FadeInDown.duration(400)}>
               <Card variant="subtle" style={styles.resultsCard}>
                 <Text style={styles.resultsTitle}>
-                  {guiltyCount} {guiltyCount === 1 ? 'person' : 'people'} guilty!
+                  {guiltyCount} {guiltyCount === 1 ? 'person' : 'people'} guilty! 👀
                 </Text>
                 <View style={styles.playerResults}>
                   <View style={styles.resultRow}>
                     <Avatar name="You" size={30} />
                     <Text style={styles.resultName}>You</Text>
                     <Text style={myAnswer ? styles.guilty : styles.innocent}>
-                      {myAnswer ? 'Guilty' : 'Innocent'}
+                      {myAnswer ? '😈 Guilty' : '😇 Innocent'}
                     </Text>
                   </View>
                   {PLAYERS.map((player) => (
@@ -160,7 +222,7 @@ export const NeverHaveIEverScreen: React.FC<NeverHaveIEverScreenProps> = ({
                       <Avatar name={player.name} size={30} gender={player.gender} />
                       <Text style={styles.resultName}>{player.name}</Text>
                       <Text style={playerAnswers[player.name] ? styles.guilty : styles.innocent}>
-                        {playerAnswers[player.name] ? 'Guilty' : 'Innocent'}
+                        {playerAnswers[player.name] ? '😈 Guilty' : '😇 Innocent'}
                       </Text>
                     </View>
                   ))}
@@ -171,10 +233,11 @@ export const NeverHaveIEverScreen: React.FC<NeverHaveIEverScreenProps> = ({
 
           {/* Action Buttons */}
           <View style={styles.buttonContainer}>
-            {!revealed ? (
-              <Button title="Reveal Answers" onPress={handleReveal} variant="primary" disabled={myAnswer === null} haptic="medium" />
-            ) : (
-              <Button title={currentRound < totalRounds ? 'Next Round' : 'Finish Game'} onPress={handleNextRound} variant="primary" haptic="medium" />
+            {phase === 'playing' && (
+              <Button title="Lock In Answer" onPress={handleReveal} variant="primary" disabled={myAnswer === null} haptic="medium" />
+            )}
+            {phase === 'reveal' && (
+              <Button title={currentRound < totalRounds ? 'Next Round' : 'See Results'} onPress={handleNextRound} variant="primary" haptic="medium" />
             )}
             <Button title="Back to Games" onPress={onBack} variant="secondary" style={styles.backButton} />
           </View>
