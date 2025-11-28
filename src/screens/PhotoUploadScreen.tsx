@@ -8,14 +8,14 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   TouchableOpacity,
   StatusBar,
   Alert,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeInDown } from '../shims/reanimated';
 import { GradientBackground, Button, Card } from '../components/common';
-import { colors, spacing, borderRadius } from '../theme';
+import { colors, spacing, borderRadius , fonts } from '../theme';
 import { HapticService } from '../services/haptics';
 
 interface PhotoUploadScreenProps {
@@ -58,7 +58,7 @@ export const PhotoUploadScreen: React.FC<PhotoUploadScreenProps> = ({
   return (
     <GradientBackground>
       <StatusBar barStyle="light-content" />
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={styles.container} edges={['bottom', 'left', 'right']}>
         <View style={styles.content}>
           <Animated.View entering={FadeInDown.duration(600)}>
             <Card variant="elevated" style={styles.card}>
@@ -130,10 +130,10 @@ export const PhotoUploadScreen: React.FC<PhotoUploadScreenProps> = ({
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  content: { flex: 1, padding: spacing.xl, paddingTop: 40 },
+  content: { flex: 1, padding: spacing.xl, paddingTop: 40, paddingBottom: 80 },
   card: { paddingVertical: 30 },
   header: { alignItems: 'center', marginBottom: 30 },
-  title: { fontSize: 28, fontWeight: '700', color: colors.text, marginBottom: 10 },
+  title: { fontSize: 28, fontFamily: fonts.headingBold, color: colors.text, marginBottom: 10 },
   subtitle: { fontSize: 15, color: colors.textSecondary, textAlign: 'center' },
   photoGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, justifyContent: 'center', marginBottom: 20 },
   photoBox: { width: '30%', aspectRatio: 1, backgroundColor: colors.glassBg, borderWidth: 2, borderStyle: 'dashed', borderColor: colors.cardBorder, borderRadius: borderRadius.md, alignItems: 'center', justifyContent: 'center' },
@@ -149,5 +149,8 @@ const styles = StyleSheet.create({
 });
 
 export default PhotoUploadScreen;
+
+
+
 
 

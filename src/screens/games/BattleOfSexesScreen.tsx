@@ -1,4 +1,4 @@
-﻿/**
+/**
  * BattleOfSexesScreen - Team trivia battle
  * Men vs Women trivia competition
  */
@@ -8,15 +8,16 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   StatusBar,
   TouchableOpacity,
+  ScrollView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn, SlideInRight, FadeInDown } from '../../shims/reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { GradientBackground, Button, Card } from '../../components/common';
 import { GameHeader } from '../../components/games';
-import { colors, spacing, borderRadius } from '../../theme';
+import { colors, spacing, borderRadius, fonts } from '../../theme';
 import { HapticService } from '../../services/haptics';
 
 interface BattleOfSexesScreenProps {
@@ -93,8 +94,8 @@ export const BattleOfSexesScreen: React.FC<BattleOfSexesScreenProps> = ({
   return (
     <GradientBackground>
       <StatusBar barStyle="light-content" />
-      <SafeAreaView style={styles.container}>
-        <View style={styles.content}>
+      <SafeAreaView style={styles.container} edges={['bottom', 'left', 'right']}>
+        <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           <GameHeader title="Battle of Sexes" icon="users" currentRound={currentRound} totalRounds={totalRounds} timeLeft={timeLeft} showTimer={!revealed} />
 
           {/* Score Board */}
@@ -141,7 +142,7 @@ export const BattleOfSexesScreen: React.FC<BattleOfSexesScreenProps> = ({
             )}
             <Button title="Back to Games" onPress={onBack} variant="secondary" style={styles.backButton} />
           </View>
-        </View>
+        </ScrollView>
       </SafeAreaView>
     </GradientBackground>
   );
@@ -149,23 +150,26 @@ export const BattleOfSexesScreen: React.FC<BattleOfSexesScreenProps> = ({
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  content: { flex: 1, padding: spacing.xl, paddingTop: 40 },
-  scoreBoard: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 15, marginBottom: 20 },
-  scoreTeam: { padding: 15, borderRadius: borderRadius.md, alignItems: 'center', minWidth: 100 },
+  scrollView: { flex: 1 },
+  scrollContent: { padding: spacing.xl, paddingTop: 40, paddingBottom: 80 },
+  scoreBoard: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.md, marginBottom: spacing.lg },
+  scoreTeam: { padding: spacing.md, borderRadius: borderRadius.md, alignItems: 'center', minWidth: 100 },
   teamLabel: { fontSize: 14, color: '#fff', marginBottom: 5 },
   teamScore: { fontSize: 32, fontWeight: '900', color: '#fff' },
   vs: { fontSize: 18, fontWeight: '700', color: colors.textSecondary },
-  questionCard: { paddingVertical: 25 },
-  forTeam: { fontSize: 14, color: colors.primary, fontWeight: '600', textAlign: 'center', marginBottom: 15 },
-  question: { fontSize: 18, fontWeight: '600', color: colors.text, textAlign: 'center', marginBottom: 20, lineHeight: 26 },
-  options: { gap: 10 },
-  option: { padding: 15, backgroundColor: colors.glassBg, borderWidth: 2, borderColor: 'rgba(255, 255, 255, 0.1)', borderRadius: borderRadius.md },
-  optionSelected: { borderColor: colors.primary, backgroundColor: 'rgba(255, 20, 147, 0.2)' },
-  optionCorrect: { borderColor: colors.success, backgroundColor: 'rgba(52, 199, 89, 0.2)' },
-  optionWrong: { borderColor: colors.error, backgroundColor: 'rgba(255, 59, 48, 0.2)' },
+  questionCard: { paddingVertical: spacing.xl },
+  forTeam: { fontSize: 14, color: colors.primary, fontWeight: '600', textAlign: 'center', marginBottom: spacing.md },
+  question: { fontSize: 18, fontWeight: '600', color: colors.text, textAlign: 'center', marginBottom: spacing.lg, lineHeight: 26 },
+  options: { gap: spacing.sm },
+  option: { padding: 14, backgroundColor: colors.glassBg, borderWidth: 1, borderColor: colors.cardBorder, borderRadius: borderRadius.md },
+  optionSelected: { borderColor: colors.primary, backgroundColor: 'rgba(255, 20, 147, 0.15)' },
+  optionCorrect: { borderColor: colors.success, backgroundColor: 'rgba(52, 199, 89, 0.15)' },
+  optionWrong: { borderColor: colors.error, backgroundColor: 'rgba(255, 59, 48, 0.15)' },
   optionText: { fontSize: 16, color: colors.text, textAlign: 'center' },
-  buttonContainer: { marginTop: 'auto', paddingTop: spacing.md },
+  buttonContainer: { paddingTop: spacing.xl },
   backButton: { marginTop: spacing.md },
 });
 
 export default BattleOfSexesScreen;
+
+

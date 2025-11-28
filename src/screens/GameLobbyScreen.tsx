@@ -1,4 +1,4 @@
-﻿/**
+/**
  * GameLobbyScreen - Pre-game lobby where players wait
  * Matches the HTML prototype lobby screen
  */
@@ -8,13 +8,13 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   StatusBar,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeInDown, FadeIn, useAnimatedStyle, withRepeat, withTiming } from '../shims/reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { GradientBackground, Card, Avatar } from '../components/common';
-import { colors, spacing, borderRadius } from '../theme';
+import { colors, spacing, borderRadius , fonts } from '../theme';
 
 interface Player {
   id: string;
@@ -50,13 +50,19 @@ export const GameLobbyScreen: React.FC<GameLobbyScreenProps> = ({
   onGameStart,
 }) => {
   const [countdown, setCountdown] = useState(30);
+  const [gameStarted, setGameStarted] = useState(false);
 
   useEffect(() => {
+    if (gameStarted) {
+      onGameStart();
+      return;
+    }
+
     const timer = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
           clearInterval(timer);
-          onGameStart();
+          setGameStarted(true);
           return 0;
         }
         return prev - 1;
@@ -64,7 +70,7 @@ export const GameLobbyScreen: React.FC<GameLobbyScreenProps> = ({
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [onGameStart]);
+  }, [gameStarted, onGameStart]);
 
   const pulseStyle = useAnimatedStyle(() => ({
     opacity: withRepeat(withTiming(0.5, { duration: 1000 }), -1, true),
@@ -73,7 +79,7 @@ export const GameLobbyScreen: React.FC<GameLobbyScreenProps> = ({
   return (
     <GradientBackground variant="intense">
       <StatusBar barStyle="light-content" />
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={styles.container} edges={['bottom', 'left', 'right']}>
         <View style={styles.content}>
           {/* Header */}
           <Animated.View entering={FadeIn.duration(600)} style={styles.header}>
@@ -118,21 +124,24 @@ export const GameLobbyScreen: React.FC<GameLobbyScreenProps> = ({
 const styles = StyleSheet.create({
   container: { flex: 1 },
   content: { flex: 1, padding: spacing.xl, paddingTop: 40 },
-  header: { alignItems: 'center', marginBottom: 30 },
-  title: { fontSize: 28, fontWeight: '700', color: colors.text, marginBottom: 8 },
+  header: { alignItems: 'center', marginBottom: spacing.xl },
+  title: { fontSize: 28, fontFamily: fonts.headingBold, color: colors.text, marginBottom: 8 },
   subtitle: { fontSize: 16, color: colors.textSecondary },
-  countdownCard: { alignItems: 'center', paddingVertical: 30, marginBottom: 25, position: 'relative' },
-  countdownLabel: { fontSize: 14, color: colors.textSecondary, marginBottom: 10 },
+  countdownCard: { alignItems: 'center', paddingVertical: spacing.xl, marginBottom: spacing.lg, position: 'relative' },
+  countdownLabel: { fontSize: 14, color: colors.textSecondary, marginBottom: spacing.sm },
   countdown: { fontSize: 72, fontWeight: '900', color: colors.primary, textShadowColor: 'rgba(255, 20, 147, 0.5)', textShadowRadius: 20 },
   countdownUnit: { fontSize: 14, color: colors.textSecondary },
   pulseRing: { position: 'absolute', width: 150, height: 150, borderRadius: 75, borderWidth: 2, borderColor: colors.primary },
-  playersCard: { paddingVertical: 25, marginBottom: 20 },
-  playersTitle: { fontSize: 16, fontWeight: '600', color: colors.text, textAlign: 'center', marginBottom: 20 },
-  playersGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 15 },
-  playerContainer: { alignItems: 'center', width: 80 },
+  playersCard: { paddingVertical: spacing.xl, marginBottom: spacing.lg },
+  playersTitle: { fontSize: 16, fontWeight: '600', color: colors.text, textAlign: 'center', marginBottom: spacing.lg },
+  playersGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: spacing.sm, paddingHorizontal: spacing.sm },
+  playerContainer: { alignItems: 'center', width: 85 },
   playerName: { fontSize: 14, color: colors.text, marginTop: 8 },
   infoContainer: { alignItems: 'center' },
   infoText: { fontSize: 14, color: colors.textSecondary },
 });
 
 export default GameLobbyScreen;
+
+
+

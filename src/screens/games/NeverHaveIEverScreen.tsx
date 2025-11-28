@@ -1,4 +1,4 @@
-﻿/**
+/**
  * NeverHaveIEverScreen - Never Have I Ever game
  * Players reveal if they've done something
  */
@@ -8,13 +8,14 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   StatusBar,
+  ScrollView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn, SlideInRight, FadeInDown } from '../../shims/reanimated';
 import { GradientBackground, Button, Card, Avatar } from '../../components/common';
 import { GameHeader } from '../../components/games';
-import { colors, spacing, borderRadius } from '../../theme';
+import { colors, spacing, borderRadius, fonts } from '../../theme';
 import { HapticService } from '../../services/haptics';
 
 interface NeverHaveIEverScreenProps {
@@ -103,8 +104,8 @@ export const NeverHaveIEverScreen: React.FC<NeverHaveIEverScreenProps> = ({
   return (
     <GradientBackground>
       <StatusBar barStyle="light-content" />
-      <SafeAreaView style={styles.container}>
-        <View style={styles.content}>
+      <SafeAreaView style={styles.container} edges={['bottom', 'left', 'right']}>
+        <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           <GameHeader
             title="Never Have I Ever"
             icon="heart"
@@ -177,7 +178,7 @@ export const NeverHaveIEverScreen: React.FC<NeverHaveIEverScreenProps> = ({
             )}
             <Button title="Back to Games" onPress={onBack} variant="secondary" style={styles.backButton} />
           </View>
-        </View>
+        </ScrollView>
       </SafeAreaView>
     </GradientBackground>
   );
@@ -185,20 +186,23 @@ export const NeverHaveIEverScreen: React.FC<NeverHaveIEverScreenProps> = ({
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  content: { flex: 1, padding: spacing.xl, paddingTop: 40 },
-  promptCard: { paddingVertical: 40, alignItems: 'center', marginBottom: 25 },
+  scrollView: { flex: 1 },
+  scrollContent: { padding: spacing.xl, paddingTop: 40, paddingBottom: 80 },
+  promptCard: { paddingVertical: spacing.xxl, alignItems: 'center', marginBottom: spacing.lg },
   prompt: { fontSize: 22, fontWeight: '600', color: colors.text, textAlign: 'center', lineHeight: 32 },
-  answerButtons: { flexDirection: 'row', gap: 15, marginBottom: 25 },
+  answerButtons: { flexDirection: 'row', gap: spacing.md, marginBottom: spacing.lg },
   answerButton: { flex: 1 },
-  resultsCard: { paddingVertical: 20 },
-  resultsTitle: { fontSize: 20, fontWeight: '700', color: colors.primary, textAlign: 'center', marginBottom: 20 },
-  playerResults: { gap: 12 },
-  resultRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  resultsCard: { paddingVertical: spacing.lg },
+  resultsTitle: { fontSize: 20, fontWeight: '700', color: colors.primary, textAlign: 'center', marginBottom: spacing.lg },
+  playerResults: { gap: spacing.sm },
+  resultRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   resultName: { flex: 1, fontSize: 16, color: colors.text },
   guilty: { fontSize: 14, color: colors.primary },
   innocent: { fontSize: 14, color: colors.success },
-  buttonContainer: { marginTop: 'auto', paddingTop: spacing.md },
+  buttonContainer: { paddingTop: spacing.xl },
   backButton: { marginTop: spacing.md },
 });
 
 export default NeverHaveIEverScreen;
+
+

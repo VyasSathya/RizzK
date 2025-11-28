@@ -1,4 +1,4 @@
-﻿/**
+/**
  * OnboardingScreen - 3-slide onboarding flow
  * Matches the HTML prototype onboarding screens exactly
  */
@@ -8,15 +8,15 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   Dimensions,
   FlatList,
   StatusBar,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn, FadeInDown } from '../shims/reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { GradientBackground, Button, Card, Icon } from '../components/common';
-import { colors, spacing, borderRadius, shadows } from '../theme';
+import { colors, spacing, borderRadius, shadows , fonts } from '../theme';
 import { HapticService } from '../services/haptics';
 
 const { width } = Dimensions.get('window');
@@ -126,7 +126,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
   return (
     <GradientBackground variant="intense">
       <StatusBar barStyle="light-content" />
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={styles.container} edges={['bottom', 'left', 'right']}>
         <FlatList
           ref={flatListRef}
           data={SLIDES}
@@ -174,7 +174,7 @@ const styles = StyleSheet.create({
   iconGlow: { ...shadows.glowIntense, marginBottom: 10 },
   title: { 
     fontSize: 24, 
-    fontWeight: '700', 
+    fontFamily: fonts.headingBold, 
     color: colors.text, 
     textAlign: 'center', 
     marginBottom: 20, 
@@ -217,8 +217,11 @@ const styles = StyleSheet.create({
   dotsContainer: { flexDirection: 'row', justifyContent: 'center', gap: 8, marginBottom: 20 },
   dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: 'rgba(255, 255, 255, 0.3)' },
   dotActive: { backgroundColor: colors.primary, width: 24 },
-  buttonContainer: { paddingHorizontal: spacing.xl, paddingBottom: spacing.xxl },
+  buttonContainer: { paddingHorizontal: spacing.xl, paddingBottom: 80 },
   skipButton: { marginTop: spacing.lg },
 });
 
 export default OnboardingScreen;
+
+
+

@@ -1,17 +1,17 @@
 /**
- * RizzK Mobile App - Entry point with fonts
+ * RizzK Mobile App
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useFonts, Raleway_400Regular, Raleway_500Medium, Raleway_600SemiBold, Raleway_700Bold } from '@expo-google-fonts/raleway';
-import * as SplashScreen from 'expo-splash-screen';
+import { Cinzel_400Regular, Cinzel_600SemiBold, Cinzel_700Bold } from '@expo-google-fonts/cinzel';
 import { colors } from './src/theme';
 import { LandingScreen, SignUpScreen, LoginScreen, OnboardingScreen, PhotoUploadScreen, PersonalityQuizScreen, EventsScreen, EventDetailScreen, GameLobbyScreen, GameSelectScreen, MatchSelectionScreen, MatchesScreen, ChatScreen, SparkGameScreen, HotTakeGameScreen, TwoTruthsGameScreen, NeverHaveIEverScreen, DareOrDrinkScreen, BattleOfSexesScreen, WhoSaidItScreen } from './src/screens';
 import { GameType } from './src/screens/GameSelectScreen';
-
-SplashScreen.preventAutoHideAsync();
+import { AuthProvider } from './src/contexts/AuthContext';
 
 type Screen = 'landing' | 'onboarding' | 'signup' | 'login' | 'photos' | 'quiz' | 'events' | 'eventDetail' | 'lobby' | 'gameSelect' | 'spark' | 'hottake' | 'twotruths' | 'never' | 'dare' | 'battle' | 'whosaid' | 'matchSelection' | 'matches' | 'chat';
 
@@ -20,11 +20,15 @@ export default function App() {
   const [selectedEventId, setSelectedEventId] = useState<string>('1');
   const [selectedMatchId, setSelectedMatchId] = useState<string>('1');
 
-  const [fontsLoaded] = useFonts({ Raleway_400Regular, Raleway_500Medium, Raleway_600SemiBold, Raleway_700Bold });
-
-  const onLayoutRootView = useCallback(async () => {
-    if (fontsLoaded) { await SplashScreen.hideAsync(); }
-  }, [fontsLoaded]);
+  const [fontsLoaded] = useFonts({
+    Raleway_400Regular,
+    Raleway_500Medium,
+    Raleway_600SemiBold,
+    Raleway_700Bold,
+    Cinzel_400Regular,
+    Cinzel_600SemiBold,
+    Cinzel_700Bold,
+  });
 
   if (!fontsLoaded) {
     return <View style={styles.loadingContainer}><ActivityIndicator size="large" color={colors.primary} /></View>;
@@ -59,9 +63,13 @@ export default function App() {
   };
 
   return (
-    <GestureHandlerRootView style={styles.container} onLayout={onLayoutRootView}>
-      {renderScreen()}
-    </GestureHandlerRootView>
+    <AuthProvider>
+      <SafeAreaProvider>
+        <GestureHandlerRootView style={styles.container}>
+          {renderScreen()}
+        </GestureHandlerRootView>
+      </SafeAreaProvider>
+    </AuthProvider>
   );
 }
 
@@ -69,3 +77,4 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   loadingContainer: { flex: 1, backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center' },
 });
+

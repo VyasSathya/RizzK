@@ -1,4 +1,4 @@
-﻿/**
+/**
  * MatchesScreen - View your matches
  * Shows mutual matches from game nights
  */
@@ -8,14 +8,14 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   TouchableOpacity,
   StatusBar,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeInDown, FadeIn } from '../shims/reanimated';
 import { GradientBackground, Card, Logo, Avatar, Icon } from '../components/common';
-import { colors, spacing, borderRadius } from '../theme';
+import { colors, spacing, borderRadius , fonts } from '../theme';
 import { HapticService } from '../services/haptics';
 
 interface Match {
@@ -77,7 +77,7 @@ export const MatchesScreen: React.FC<MatchesScreenProps> = ({ onMatchPress }) =>
   return (
     <GradientBackground>
       <StatusBar barStyle="light-content" />
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={styles.container} edges={['bottom', 'left', 'right']}>
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
@@ -142,3 +142,6 @@ const styles = StyleSheet.create({
 });
 
 export default MatchesScreen;
+
+
+

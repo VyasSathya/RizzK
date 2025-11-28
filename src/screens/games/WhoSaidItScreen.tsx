@@ -3,11 +3,12 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, StatusBar, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, StatusBar, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn, SlideInRight, FadeInDown } from '../../shims/reanimated';
 import { GradientBackground, Button, Card } from '../../components/common';
 import { GameHeader, PlayerVoteCard } from '../../components/games';
-import { colors, spacing } from '../../theme';
+import { colors, spacing, fonts } from '../../theme';
 import { HapticService } from '../../services/haptics';
 
 interface WhoSaidItScreenProps { onComplete: () => void; onBack: () => void; }
@@ -75,7 +76,7 @@ export const WhoSaidItScreen: React.FC<WhoSaidItScreenProps> = ({ onComplete, on
   return (
     <GradientBackground>
       <StatusBar barStyle="light-content" />
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={styles.container} edges={['bottom', 'left', 'right']}>
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
           <GameHeader title="Who Said It?" icon="message-circle" currentRound={currentRound} totalRounds={totalRounds} timeLeft={timeLeft} showTimer={!revealed} />
           <Text style={styles.score}>Score: {score}/{currentRound - (revealed ? 0 : 1)}</Text>
@@ -111,17 +112,19 @@ export const WhoSaidItScreen: React.FC<WhoSaidItScreenProps> = ({ onComplete, on
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  content: { padding: spacing.xl, paddingTop: 40 },
-  score: { textAlign: 'center', fontSize: 16, color: colors.primary, fontWeight: '600', marginBottom: 15 },
-  quoteCard: { paddingVertical: 30, alignItems: 'center', marginBottom: 20 },
-  quoteLabel: { fontSize: 12, color: colors.primary, fontWeight: '600', letterSpacing: 2, marginBottom: 15 },
+  content: { padding: spacing.xl, paddingTop: 40, paddingBottom: 80 },
+  score: { textAlign: 'center', fontSize: 16, color: colors.primary, fontWeight: '600', marginBottom: spacing.md },
+  quoteCard: { paddingVertical: spacing.xl, alignItems: 'center', marginBottom: spacing.lg },
+  quoteLabel: { fontSize: 12, color: colors.primary, fontWeight: '600', letterSpacing: 2, marginBottom: spacing.md },
   quote: { fontSize: 20, fontWeight: '600', color: colors.text, textAlign: 'center', lineHeight: 30, fontStyle: 'italic' },
-  playersGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 12, marginBottom: 20 },
-  resultContainer: { alignItems: 'center', marginBottom: 15 },
+  playersGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: spacing.sm, marginBottom: spacing.lg, paddingHorizontal: spacing.xs },
+  resultContainer: { alignItems: 'center', marginBottom: spacing.md },
   resultCorrect: { fontSize: 22, fontWeight: '700', color: colors.success },
   resultWrong: { fontSize: 22, fontWeight: '700', color: colors.error },
-  buttonContainer: { paddingTop: spacing.md },
+  buttonContainer: { paddingTop: spacing.lg },
   backButton: { marginTop: spacing.md },
 });
 
 export default WhoSaidItScreen;
+
+

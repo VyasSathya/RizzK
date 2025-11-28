@@ -1,6 +1,6 @@
 /**
  * LoginScreen - Login screen
- * Matches the HTML prototype login screen
+ * Connected to Supabase auth
  */
 
 import React, { useState } from 'react';
@@ -8,18 +8,19 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   StatusBar,
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeInDown } from '../shims/reanimated';
 import { GradientBackground, Button, Card, Input, Logo } from '../components/common';
-import { colors, spacing } from '../theme';
+import { colors, spacing, fonts } from '../theme';
 import { HapticService } from '../services/haptics';
+import { useAuth } from '../contexts/AuthContext';
 
 interface LoginScreenProps {
-  onLogin: (email: string, password: string) => void;
+  onLogin: () => void;
   onBack: () => void;
 }
 
@@ -27,25 +28,36 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
   onLogin,
   onBack,
 }) => {
+  const { signIn, loading } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleLogin = async () => {
+    setError('');
+
+    if (!email || !password) {
+      setError('Please enter email and password');
+      HapticService.error();
+      return;
+    }
+
     HapticService.medium();
-    setLoading(true);
-    
-    // Simulate login
-    setTimeout(() => {
-      setLoading(false);
-      onLogin(email, password);
-    }, 1000);
+
+    try {
+      await signIn({ email, password });
+      HapticService.success();
+      onLogin();
+    } catch (err: any) {
+      setError(err.message || 'Login failed');
+      HapticService.error();
+    }
   };
 
   return (
     <GradientBackground>
       <StatusBar barStyle="light-content" />
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={styles.container} edges={['bottom', 'left', 'right']}>
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={styles.keyboardView}
@@ -79,12 +91,15 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                   autoComplete="password"
                 />
 
+                {/* Error Message */}
+                {error ? <Text style={styles.errorText}>{error}</Text> : null}
+
                 {/* Buttons */}
                 <Button
-                  title="Log In"
+                  title={loading ? "Logging in..." : "Log In"}
                   onPress={handleLogin}
                   variant="primary"
-                  loading={loading}
+                  disabled={loading}
                   haptic="medium"
                 />
                 <Button
@@ -92,6 +107,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                   onPress={onBack}
                   variant="secondary"
                   style={styles.backButton}
+                  disabled={loading}
                 />
               </Card>
             </Animated.View>
@@ -129,8 +145,17 @@ const styles = StyleSheet.create({
   backButton: {
     marginTop: spacing.md,
   },
+  errorText: {
+    color: colors.error,
+    fontSize: 14,
+    textAlign: 'center',
+    marginBottom: spacing.md,
+  },
 });
 
 export default LoginScreen;
+
+
+
 
 

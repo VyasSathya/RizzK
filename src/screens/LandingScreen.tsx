@@ -3,27 +3,34 @@
  */
 
 import React from 'react';
-import { View, Text, StyleSheet, SafeAreaView, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, StatusBar, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeInDown, FadeInUp } from '../shims/reanimated';
-import { GradientBackground, Button, Card, LogoWithTagline, Icon } from '../components/common';
+import { GradientBackground, Button, Card, Icon } from '../components/common';
 import { colors, spacing, shadows, fonts } from '../theme';
 
-interface LandingScreenProps { onGetStarted: () => void; onLogin: () => void; }
+interface LandingScreenProps {
+  onGetStarted: () => void;
+  onLogin: () => void;
+}
 
-export const LandingScreen: React.FC<LandingScreenProps> = ({ onGetStarted, onLogin }) => {
+const LandingScreen: React.FC<LandingScreenProps> = ({ onGetStarted, onLogin }) => {
   return (
     <GradientBackground variant="intense">
       <StatusBar barStyle="light-content" />
-      <SafeAreaView style={styles.container}>
-        <View style={styles.content}>
+      <SafeAreaView style={styles.container} edges={['bottom', 'left', 'right']}>
+        <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           <Animated.View entering={FadeInDown.delay(200).duration(800)} style={styles.header}>
-            <LogoWithTagline size="large" animated />
+            <Text style={styles.logo}>RizzK</Text>
+            <Text style={styles.tagline}>TAKE THE RIZK</Text>
           </Animated.View>
 
           <Animated.View entering={FadeInUp.delay(400).duration(800)}>
             <Card variant="elevated" style={styles.mainCard}>
               <View style={styles.iconContainer}>
-                <View style={styles.iconGlow}><Icon name="zap" size={80} color={colors.primary} /></View>
+                <View style={styles.iconGlow}>
+                  <Icon name="zap" size={80} color={colors.primary} />
+                </View>
               </View>
               <Text style={styles.headline}>Meet People Through Games, Not Swipes</Text>
               <Text style={styles.subtext}>Join personality-matched game nights.{'\n'}Play. Connect. Date.</Text>
@@ -34,7 +41,7 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({ onGetStarted, onLo
             <Button title="Get Started" onPress={onGetStarted} variant="primary" size="large" haptic="medium" />
             <Button title="I Have an Account" onPress={onLogin} variant="secondary" size="large" style={styles.secondaryButton} />
           </Animated.View>
-        </View>
+        </ScrollView>
       </SafeAreaView>
     </GradientBackground>
   );
@@ -42,15 +49,52 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({ onGetStarted, onLo
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  content: { flex: 1, paddingHorizontal: spacing.xl, paddingTop: 60, paddingBottom: spacing.xxl },
+  scrollView: { flex: 1 },
+  scrollContent: { padding: spacing.xl, paddingTop: 40, paddingBottom: 80 },
   header: { alignItems: 'center', marginBottom: 40 },
+  logo: {
+    fontFamily: 'Cinzel_700Bold',
+    fontSize: 52,
+    letterSpacing: 3,
+    color: colors.primary,
+    textShadowColor: 'rgba(255, 20, 147, 0.5)',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 20,
+  },
+  tagline: {
+    fontFamily: 'Raleway_600SemiBold',
+    fontSize: 16,
+    color: colors.text,
+    letterSpacing: 6,
+    textTransform: 'uppercase',
+    marginTop: 10,
+    opacity: 0.9,
+  },
   mainCard: { alignItems: 'center', paddingVertical: 50, paddingHorizontal: 30 },
   iconContainer: { marginBottom: 30 },
   iconGlow: { ...shadows.glowIntense },
-  headline: { fontFamily: fonts.headingBold, fontSize: 28, color: colors.text, textAlign: 'center', marginBottom: 20, letterSpacing: 1, lineHeight: 38 },
-  subtext: { fontFamily: fonts.body, fontSize: 18, color: colors.textSecondary, textAlign: 'center', lineHeight: 28 },
-  buttonContainer: { marginTop: 'auto', paddingTop: spacing.xxl },
+  headline: {
+    fontFamily: 'Cinzel_700Bold',
+    fontSize: 28,
+    color: colors.text,
+    textAlign: 'center',
+    marginBottom: 20,
+    letterSpacing: 1,
+    lineHeight: 38
+  },
+  subtext: {
+    fontFamily: 'Raleway_400Regular',
+    fontSize: 18,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 28
+  },
+  buttonContainer: { paddingTop: spacing.xl },
   secondaryButton: { marginTop: spacing.lg },
 });
 
+export { LandingScreen };
 export default LandingScreen;
+
+
+

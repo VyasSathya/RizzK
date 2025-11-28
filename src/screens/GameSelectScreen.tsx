@@ -1,4 +1,4 @@
-﻿/**
+/**
  * GameSelectScreen - Select which game to play
  * Shows all 7 games in a sleek grid matching the prototype
  */
@@ -8,16 +8,16 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   TouchableOpacity,
   StatusBar,
   Dimensions,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeInDown } from '../shims/reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { GradientBackground, Logo, Icon, IconName } from '../components/common';
-import { colors, spacing, borderRadius, shadows } from '../theme';
+import { colors, spacing, borderRadius, shadows , fonts } from '../theme';
 import { HapticService } from '../services/haptics';
 
 const { width } = Dimensions.get('window');
@@ -77,7 +77,7 @@ export const GameSelectScreen: React.FC<GameSelectScreenProps> = ({
   return (
     <GradientBackground>
       <StatusBar barStyle="light-content" />
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={styles.container} edges={['bottom', 'left', 'right']}>
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
@@ -112,8 +112,8 @@ export const GameSelectScreen: React.FC<GameSelectScreenProps> = ({
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  scrollContent: { padding: spacing.xl, paddingTop: 40 },
-  header: { alignItems: 'center', marginBottom: 30 },
+  scrollContent: { padding: spacing.xl, paddingTop: 40, paddingBottom: 80 },
+  header: { alignItems: 'center', marginBottom: spacing.xl },
   subtitle: { 
     color: colors.textSecondary, 
     marginTop: 12, 
@@ -124,13 +124,14 @@ const styles = StyleSheet.create({
   gamesGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     gap: spacing.md,
   },
   gameCard: {
     width: CARD_WIDTH,
-    marginBottom: spacing.md,
     borderRadius: borderRadius.lg,
+    borderWidth: 1,
+    borderColor: colors.cardBorder,
     overflow: 'hidden',
     ...shadows.card,
   },
@@ -139,18 +140,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: spacing.lg,
-    borderWidth: 1,
-    borderColor: colors.cardBorder,
-    borderRadius: borderRadius.lg,
   },
   iconWrapper: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: 52,
+    height: 52,
+    borderRadius: 26,
     backgroundColor: 'rgba(255, 20, 147, 0.15)',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 12,
+    marginBottom: spacing.sm,
   },
   gameTitle: {
     fontSize: 16,
@@ -169,9 +167,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: colors.textMuted,
     fontSize: 14,
-    marginTop: 20,
+    marginTop: spacing.lg,
     letterSpacing: 1,
   },
 });
 
 export default GameSelectScreen;
+
+
+

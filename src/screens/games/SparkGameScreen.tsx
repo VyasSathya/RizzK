@@ -1,4 +1,4 @@
-﻿/**
+/**
  * SparkGameScreen - Deep conversation questions
  * Players take turns answering thought-provoking questions
  */
@@ -8,14 +8,15 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   StatusBar,
+  ScrollView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn, SlideInRight } from '../../shims/reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { GradientBackground, Button, Card, Avatar, Icon } from '../../components/common';
 import { GameHeader } from '../../components/games';
-import { colors, spacing, borderRadius, shadows } from '../../theme';
+import { colors, spacing, borderRadius, shadows, fonts } from '../../theme';
 import { HapticService } from '../../services/haptics';
 
 interface SparkGameScreenProps {
@@ -96,8 +97,8 @@ export const SparkGameScreen: React.FC<SparkGameScreenProps> = ({
   return (
     <GradientBackground>
       <StatusBar barStyle="light-content" />
-      <SafeAreaView style={styles.container}>
-        <View style={styles.content}>
+      <SafeAreaView style={styles.container} edges={['bottom', 'left', 'right']}>
+        <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           <GameHeader
             title="Spark"
             icon="zap"
@@ -150,7 +151,7 @@ export const SparkGameScreen: React.FC<SparkGameScreenProps> = ({
               style={styles.backButton}
             />
           </View>
-        </View>
+        </ScrollView>
       </SafeAreaView>
     </GradientBackground>
   );
@@ -158,17 +159,18 @@ export const SparkGameScreen: React.FC<SparkGameScreenProps> = ({
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  content: { flex: 1, padding: spacing.xl, paddingTop: 40 },
-  playerSection: { alignItems: 'center', marginBottom: 30 },
-  playerLabel: { 
-    fontSize: 12, 
-    color: colors.textTertiary, 
+  scrollView: { flex: 1 },
+  scrollContent: { padding: spacing.xl, paddingTop: 40, paddingBottom: 80 },
+  playerSection: { alignItems: 'center', marginBottom: spacing.xl },
+  playerLabel: {
+    fontSize: 12,
+    color: colors.textTertiary,
     letterSpacing: 3,
-    marginBottom: 15,
+    marginBottom: spacing.md,
   },
-  playerInfo: { alignItems: 'center', gap: 12 },
+  playerInfo: { alignItems: 'center', gap: spacing.sm },
   avatarGlow: { ...shadows.glowIntense },
-  playerName: { fontSize: 26, fontWeight: '700', color: colors.text, letterSpacing: 1 },
+  playerName: { fontSize: 26, fontFamily: fonts.headingBold, color: colors.text, letterSpacing: 1 },
   questionCard: { 
     paddingVertical: 40, 
     paddingHorizontal: 25,
@@ -179,20 +181,20 @@ const styles = StyleSheet.create({
     ...shadows.card,
   },
   questionIconContainer: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: 'rgba(255, 20, 147, 0.2)',
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(255, 20, 147, 0.15)',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 15,
+    marginBottom: spacing.md,
   },
-  questionLabel: { 
-    fontSize: 12, 
-    color: colors.primary, 
-    fontWeight: '700', 
-    letterSpacing: 3, 
-    marginBottom: 15,
+  questionLabel: {
+    fontSize: 12,
+    color: colors.primary,
+    fontWeight: '700',
+    letterSpacing: 3,
+    marginBottom: spacing.md,
   },
   question: { 
     fontSize: 22, 
@@ -201,8 +203,10 @@ const styles = StyleSheet.create({
     textAlign: 'center', 
     lineHeight: 34,
   },
-  buttonContainer: { marginTop: 'auto', paddingTop: spacing.xl },
+  buttonContainer: { paddingTop: spacing.xl },
   backButton: { marginTop: spacing.lg },
 });
 
 export default SparkGameScreen;
+
+

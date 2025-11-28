@@ -5,15 +5,7 @@
 
 import React from 'react';
 import { View, Text, StyleSheet, ViewStyle } from 'react-native';
-import Animated, {
-  useAnimatedStyle,
-  withRepeat,
-  withSequence,
-  withTiming,
-  useSharedValue,
-  withDelay,
-} from '../../shims/reanimated';
-import { colors } from '../../theme';
+import { colors, fonts } from '../../theme';
 
 interface LogoProps {
   size?: 'small' | 'medium' | 'large';
@@ -26,49 +18,17 @@ export const Logo: React.FC<LogoProps> = ({
   animated = true,
   style,
 }) => {
-  const glowOpacity = useSharedValue(0.5);
-
-  React.useEffect(() => {
-    if (animated) {
-      glowOpacity.value = withRepeat(
-        withSequence(
-          withTiming(0.8, { duration: 1500 }),
-          withTiming(0.5, { duration: 1500 })
-        ),
-        -1,
-        true
-      );
-    }
-  }, [animated]);
-
-  const animatedGlowStyle = useAnimatedStyle(() => ({
-    textShadowRadius: 20 + (glowOpacity.value * 20),
-    opacity: 0.8 + (glowOpacity.value * 0.2),
-  }));
-
   const sizes = {
     small: { fontSize: 28, letterSpacing: 2 },
     medium: { fontSize: 40, letterSpacing: 2.5 },
     large: { fontSize: 52, letterSpacing: 3 },
   };
 
-  const taglineSizes = {
-    small: 10,
-    medium: 13,
-    large: 16,
-  };
-
   return (
     <View style={[styles.container, style]}>
-      <Animated.Text
-        style={[
-          styles.logo,
-          sizes[size],
-          animated && animatedGlowStyle,
-        ]}
-      >
+      <Text style={[styles.logo, sizes[size]]}>
         RizzK
-      </Animated.Text>
+      </Text>
     </View>
   );
 };
@@ -104,15 +64,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   logo: {
-    fontWeight: '900',
+    fontFamily: 'Cinzel_700Bold',
     color: colors.primary,
     textShadowColor: 'rgba(255, 20, 147, 0.5)',
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 20,
   },
   tagline: {
+    fontFamily: 'Raleway_600SemiBold',
     color: colors.text,
-    fontWeight: '300',
     letterSpacing: 6,
     textTransform: 'uppercase',
     marginTop: 10,

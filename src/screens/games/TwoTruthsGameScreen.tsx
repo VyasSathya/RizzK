@@ -1,4 +1,4 @@
-﻿/**
+/**
  * TwoTruthsGameScreen - Two Truths and a Lie
  * Players guess which statement is the lie
  */
@@ -8,14 +8,15 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   StatusBar,
   TouchableOpacity,
+  ScrollView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn, SlideInRight, FadeInDown } from '../../shims/reanimated';
 import { GradientBackground, Button, Card, Avatar } from '../../components/common';
 import { GameHeader } from '../../components/games';
-import { colors, spacing, borderRadius } from '../../theme';
+import { colors, spacing, borderRadius, fonts } from '../../theme';
 import { HapticService } from '../../services/haptics';
 
 interface TwoTruthsGameScreenProps {
@@ -99,8 +100,8 @@ export const TwoTruthsGameScreen: React.FC<TwoTruthsGameScreenProps> = ({
   return (
     <GradientBackground>
       <StatusBar barStyle="light-content" />
-      <SafeAreaView style={styles.container}>
-        <View style={styles.content}>
+      <SafeAreaView style={styles.container} edges={['bottom', 'left', 'right']}>
+        <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           <GameHeader
             title="Two Truths & a Lie"
             icon="eye"
@@ -156,7 +157,7 @@ export const TwoTruthsGameScreen: React.FC<TwoTruthsGameScreenProps> = ({
             )}
             <Button title="Back to Games" onPress={onBack} variant="secondary" style={styles.backButton} />
           </View>
-        </View>
+        </ScrollView>
       </SafeAreaView>
     </GradientBackground>
   );
@@ -164,23 +165,26 @@ export const TwoTruthsGameScreen: React.FC<TwoTruthsGameScreenProps> = ({
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  content: { flex: 1, padding: spacing.xl, paddingTop: 40 },
-  playerSection: { alignItems: 'center', marginBottom: 20 },
-  playerName: { fontSize: 22, fontWeight: '700', color: colors.text, marginTop: 10 },
+  scrollView: { flex: 1 },
+  scrollContent: { padding: spacing.xl, paddingTop: 40, paddingBottom: 80 },
+  playerSection: { alignItems: 'center', marginBottom: spacing.lg },
+  playerName: { fontSize: 22, fontFamily: fonts.headingBold, color: colors.text, marginTop: 10 },
   instruction: { fontSize: 14, color: colors.textSecondary, marginTop: 5 },
-  statementsCard: { paddingVertical: 20, gap: 12 },
-  statement: { flexDirection: 'row', alignItems: 'center', padding: 15, backgroundColor: colors.glassBg, borderWidth: 2, borderColor: 'rgba(255, 255, 255, 0.1)', borderRadius: borderRadius.md, gap: 12 },
-  statementSelected: { flexDirection: 'row', alignItems: 'center', padding: 15, backgroundColor: 'rgba(255, 20, 147, 0.2)', borderWidth: 2, borderColor: colors.primary, borderRadius: borderRadius.md, gap: 12 },
-  statementLie: { flexDirection: 'row', alignItems: 'center', padding: 15, backgroundColor: 'rgba(255, 59, 48, 0.2)', borderWidth: 2, borderColor: colors.error, borderRadius: borderRadius.md, gap: 12 },
-  statementTruth: { flexDirection: 'row', alignItems: 'center', padding: 15, backgroundColor: 'rgba(52, 199, 89, 0.2)', borderWidth: 2, borderColor: colors.success, borderRadius: borderRadius.md, gap: 12 },
+  statementsCard: { paddingVertical: spacing.lg, gap: spacing.sm },
+  statement: { flexDirection: 'row', alignItems: 'center', padding: 14, backgroundColor: colors.glassBg, borderWidth: 1, borderColor: colors.cardBorder, borderRadius: borderRadius.md, gap: 12 },
+  statementSelected: { flexDirection: 'row', alignItems: 'center', padding: 14, backgroundColor: 'rgba(255, 20, 147, 0.15)', borderWidth: 1, borderColor: colors.primary, borderRadius: borderRadius.md, gap: 12 },
+  statementLie: { flexDirection: 'row', alignItems: 'center', padding: 14, backgroundColor: 'rgba(255, 59, 48, 0.15)', borderWidth: 1, borderColor: colors.error, borderRadius: borderRadius.md, gap: 12 },
+  statementTruth: { flexDirection: 'row', alignItems: 'center', padding: 14, backgroundColor: 'rgba(52, 199, 89, 0.15)', borderWidth: 1, borderColor: colors.success, borderRadius: borderRadius.md, gap: 12 },
   statementNumber: { width: 30, height: 30, borderRadius: 15, backgroundColor: colors.primary, textAlign: 'center', lineHeight: 30, color: '#fff', fontWeight: '700' },
   statementText: { flex: 1, fontSize: 15, color: colors.text },
   lieLabel: { fontSize: 12, fontWeight: '700', color: colors.error },
-  resultContainer: { alignItems: 'center', marginTop: 15 },
+  resultContainer: { alignItems: 'center', marginTop: spacing.md },
   resultCorrect: { fontSize: 20, fontWeight: '700', color: colors.success },
   resultWrong: { fontSize: 20, fontWeight: '700', color: colors.error },
-  buttonContainer: { marginTop: 'auto', paddingTop: spacing.md },
+  buttonContainer: { paddingTop: spacing.xl },
   backButton: { marginTop: spacing.md },
 });
 
 export default TwoTruthsGameScreen;
+
+

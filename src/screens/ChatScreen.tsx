@@ -1,4 +1,4 @@
-﻿/**
+/**
  * ChatScreen - Chat with a match
  * Simple chat interface
  */
@@ -8,7 +8,6 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   TextInput,
   TouchableOpacity,
@@ -16,10 +15,11 @@ import {
   Platform,
   StatusBar,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeInDown, FadeIn } from '../shims/reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { GradientBackground, Avatar, Icon } from '../components/common';
-import { colors, spacing, borderRadius } from '../theme';
+import { colors, spacing, borderRadius , fonts } from '../theme';
 import { HapticService } from '../services/haptics';
 
 interface Message {
@@ -74,7 +74,7 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
   return (
     <GradientBackground>
       <StatusBar barStyle="light-content" />
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={styles.container} edges={['bottom', 'left', 'right']}>
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity onPress={onBack} style={styles.backButton}>
@@ -171,3 +171,6 @@ const styles = StyleSheet.create({
 });
 
 export default ChatScreen;
+
+
+

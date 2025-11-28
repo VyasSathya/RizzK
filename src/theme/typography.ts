@@ -1,6 +1,6 @@
 /**
  * Typography - Font families and text styles matching the prototype
- * Uses Raleway font family
+ * Uses Cinzel for headings, Raleway for body text
  */
 
 export const fonts = {
@@ -8,9 +8,9 @@ export const fonts = {
   bodyMedium: 'Raleway_500Medium',
   bodySemiBold: 'Raleway_600SemiBold',
   bodyBold: 'Raleway_700Bold',
-  heading: 'Raleway_700Bold',
-  headingSemiBold: 'Raleway_600SemiBold',
-  headingBold: 'Raleway_700Bold',
+  heading: 'Cinzel_700Bold',
+  headingSemiBold: 'Cinzel_600SemiBold',
+  headingBold: 'Cinzel_700Bold',
 };
 
 export const textStyles = {

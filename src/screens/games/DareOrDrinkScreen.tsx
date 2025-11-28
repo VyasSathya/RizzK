@@ -1,4 +1,4 @@
-﻿/**
+/**
  * DareOrDrinkScreen - Dare or Drink game
  * Players choose to do a dare or take a drink
  */
@@ -8,14 +8,15 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   StatusBar,
+  ScrollView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn, SlideInRight, FadeInDown } from '../../shims/reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { GradientBackground, Button, Card, Avatar, Icon } from '../../components/common';
 import { GameHeader } from '../../components/games';
-import { colors, spacing, borderRadius } from '../../theme';
+import { colors, spacing, borderRadius, fonts } from '../../theme';
 import { HapticService } from '../../services/haptics';
 
 interface DareOrDrinkScreenProps {
@@ -84,8 +85,8 @@ export const DareOrDrinkScreen: React.FC<DareOrDrinkScreenProps> = ({
   return (
     <GradientBackground>
       <StatusBar barStyle="light-content" />
-      <SafeAreaView style={styles.container}>
-        <View style={styles.content}>
+      <SafeAreaView style={styles.container} edges={['bottom', 'left', 'right']}>
+        <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           <GameHeader
             title="Dare or Drink"
             icon="activity"
@@ -140,8 +141,10 @@ export const DareOrDrinkScreen: React.FC<DareOrDrinkScreenProps> = ({
             </Animated.View>
           )}
 
-          <Button title="Back to Games" onPress={onBack} variant="secondary" style={styles.backButton} />
-        </View>
+          <View style={styles.buttonContainer}>
+            <Button title="Back to Games" onPress={onBack} variant="secondary" />
+          </View>
+        </ScrollView>
       </SafeAreaView>
     </GradientBackground>
   );
@@ -149,8 +152,9 @@ export const DareOrDrinkScreen: React.FC<DareOrDrinkScreenProps> = ({
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  content: { flex: 1, padding: spacing.xl, paddingTop: 40 },
-  playerSection: { alignItems: 'center', marginBottom: 25 },
+  scrollView: { flex: 1 },
+  scrollContent: { padding: spacing.xl, paddingTop: 40, paddingBottom: 80 },
+  playerSection: { alignItems: 'center', marginBottom: spacing.lg },
   avatarGlow: { 
     shadowColor: colors.primary, 
     shadowOffset: { width: 0, height: 0 }, 
@@ -158,31 +162,31 @@ const styles = StyleSheet.create({
     shadowRadius: 20,
     elevation: 10,
   },
-  playerName: { fontSize: 26, fontWeight: '700', color: colors.text, marginTop: 15, letterSpacing: 1 },
+  playerName: { fontSize: 26, fontFamily: fonts.headingBold, color: colors.text, marginTop: spacing.md, letterSpacing: 1 },
   playerSubtitle: { fontSize: 14, color: colors.textSecondary, marginTop: 5 },
-  dareCard: { 
+  dareCard: {
     borderRadius: borderRadius.xl,
     borderWidth: 1,
     borderColor: colors.cardBorder,
-    paddingVertical: 35, 
-    paddingHorizontal: 25,
-    alignItems: 'center', 
-    marginBottom: 25,
+    paddingVertical: spacing.xxl,
+    paddingHorizontal: spacing.xl,
+    alignItems: 'center',
+    marginBottom: spacing.lg,
   },
   dareIconContainer: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: 'rgba(255, 20, 147, 0.2)',
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(255, 20, 147, 0.15)',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 15,
+    marginBottom: spacing.md,
   },
-  dareLabel: { fontSize: 12, color: colors.primary, fontWeight: '700', letterSpacing: 3, marginBottom: 15 },
+  dareLabel: { fontSize: 12, color: colors.primary, fontWeight: '700', letterSpacing: 3, marginBottom: spacing.md },
   dareText: { fontSize: 20, fontWeight: '600', color: colors.text, textAlign: 'center', lineHeight: 32 },
-  choiceButtons: { gap: 15, marginBottom: 25 },
+  choiceButtons: { gap: spacing.md, marginBottom: spacing.lg },
   choiceButton: { width: '100%' },
-  resultContainer: { alignItems: 'center', gap: 20 },
+  resultContainer: { alignItems: 'center', gap: spacing.lg },
   resultIconContainer: {
     width: 80,
     height: 80,
@@ -192,7 +196,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   resultText: { fontSize: 24, fontWeight: '700', color: colors.primary, letterSpacing: 1 },
-  backButton: { marginTop: 'auto' },
+  buttonContainer: { paddingTop: spacing.xl },
 });
 
 export default DareOrDrinkScreen;
+
+

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * EventDetailScreen - Event details and registration
  * Matches the HTML prototype event detail screen
  */
@@ -8,14 +8,14 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   StatusBar,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeInDown } from '../shims/reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { GradientBackground, Button, Card, Icon } from '../components/common';
-import { colors, spacing, borderRadius } from '../theme';
+import { colors, spacing, borderRadius , fonts } from '../theme';
 import { HapticService } from '../services/haptics';
 
 interface EventDetailScreenProps {
@@ -58,7 +58,7 @@ export const EventDetailScreen: React.FC<EventDetailScreenProps> = ({
   return (
     <GradientBackground>
       <StatusBar barStyle="light-content" />
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={styles.container} edges={['bottom', 'left', 'right']}>
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
@@ -153,10 +153,10 @@ export const EventDetailScreen: React.FC<EventDetailScreenProps> = ({
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  scrollContent: { padding: spacing.xl, paddingTop: 40 },
+  scrollContent: { padding: spacing.xl, paddingTop: 40, paddingBottom: 80 },
   card: { paddingVertical: 0, overflow: 'hidden' },
   headerGradient: { padding: 30, alignItems: 'center', marginHorizontal: -spacing.xl, marginTop: -spacing.xl },
-  headerTitle: { fontSize: 24, fontWeight: '700', color: '#fff', marginTop: 10 },
+  headerTitle: { fontSize: 24, fontFamily: fonts.headingBold, color: '#fff', marginTop: 10 },
   details: { paddingTop: 25, gap: 20 },
   detailRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 15 },
   detailLabel: { fontSize: 12, color: colors.textTertiary, marginBottom: 4 },
@@ -174,3 +174,6 @@ const styles = StyleSheet.create({
 });
 
 export default EventDetailScreen;
+
+
+

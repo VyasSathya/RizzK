@@ -8,13 +8,13 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   TouchableOpacity,
   StatusBar,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn, FadeInRight, FadeOutLeft } from '../shims/reanimated';
 import { GradientBackground, Button, Card } from '../components/common';
-import { colors, spacing, borderRadius } from '../theme';
+import { colors, spacing, borderRadius , fonts } from '../theme';
 import { HapticService } from '../services/haptics';
 
 interface PersonalityQuizScreenProps {
@@ -71,7 +71,7 @@ export const PersonalityQuizScreen: React.FC<PersonalityQuizScreenProps> = ({
   return (
     <GradientBackground>
       <StatusBar barStyle="light-content" />
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={styles.container} edges={['bottom', 'left', 'right']}>
         <View style={styles.content}>
           {/* Header */}
           <View style={styles.header}>
@@ -125,9 +125,9 @@ export const PersonalityQuizScreen: React.FC<PersonalityQuizScreenProps> = ({
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  content: { flex: 1, padding: spacing.xl, paddingTop: 40 },
+  content: { flex: 1, padding: spacing.xl, paddingTop: 40, paddingBottom: 80 },
   header: { alignItems: 'center', marginBottom: 25 },
-  title: { fontSize: 28, fontWeight: '700', color: colors.text, marginBottom: 10 },
+  title: { fontSize: 28, fontFamily: fonts.headingBold, color: colors.text, marginBottom: 10 },
   subtitle: { fontSize: 15, color: colors.textSecondary, marginBottom: 10 },
   progress: { fontSize: 14, color: colors.textTertiary },
   progressBar: { width: '100%', height: 4, backgroundColor: 'rgba(255, 255, 255, 0.1)', borderRadius: 2, marginTop: 15, overflow: 'hidden' },
@@ -143,5 +143,8 @@ const styles = StyleSheet.create({
 });
 
 export default PersonalityQuizScreen;
+
+
+
 
 

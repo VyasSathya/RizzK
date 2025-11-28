@@ -1,25 +1,27 @@
-﻿/**
+/**
  * EventsScreen - List of upcoming game nights
- * Matches the HTML prototype events list with sleek cards
+ * Connected to Supabase
  */
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   TouchableOpacity,
   StatusBar,
+  ActivityIndicator,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeInDown } from '../shims/reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { GradientBackground, Logo, Icon } from '../components/common';
-import { colors, spacing, borderRadius, shadows } from '../theme';
+import { colors, spacing, borderRadius, shadows, fonts } from '../theme';
 import { HapticService } from '../services/haptics';
+import { getEvents, Event as DBEvent } from '../services/events';
 
-interface Event {
+interface EventDisplay {
   id: string;
   title: string;
   date: string;
@@ -33,11 +35,23 @@ interface EventsScreenProps {
   onEventPress: (eventId: string) => void;
 }
 
-const MOCK_EVENTS: Event[] = [
+// Fallback mock events when DB is empty
+const MOCK_EVENTS: EventDisplay[] = [
   { id: '1', title: 'Friday Night Games', date: 'Tonight', time: '8:00 PM', venue: 'The Lounge', people: 6, price: 35 },
   { id: '2', title: 'Saturday Social', date: 'Tomorrow', time: '7:30 PM', venue: 'Velvet Bar', people: 8, price: 40 },
   { id: '3', title: 'Sunday Vibes', date: 'Sun', time: '6:00 PM', venue: 'Rooftop Lounge', people: 6, price: 30 },
 ];
+
+// Format DB event for display
+const formatEvent = (event: DBEvent): EventDisplay => ({
+  id: event.id,
+  title: event.title,
+  date: new Date(event.date).toLocaleDateString('en-US', { weekday: 'short' }),
+  time: event.time,
+  venue: event.venue,
+  people: event.attendee_count || 0,
+  price: event.price,
+});
 
 const EventCard: React.FC<{ event: Event; onPress: () => void; delay: number }> = ({ event, onPress, delay }) => (
   <Animated.View entering={FadeInDown.delay(delay).duration(400)}>
@@ -89,10 +103,34 @@ const EventCard: React.FC<{ event: Event; onPress: () => void; delay: number }> 
 );
 
 export const EventsScreen: React.FC<EventsScreenProps> = ({ onEventPress }) => {
+  const [events, setEvents] = useState<EventDisplay[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadEvents();
+  }, []);
+
+  const loadEvents = async () => {
+    try {
+      const dbEvents = await getEvents();
+      if (dbEvents.length > 0) {
+        setEvents(dbEvents.map(formatEvent));
+      } else {
+        // Use mock events if DB is empty
+        setEvents(MOCK_EVENTS);
+      }
+    } catch (error) {
+      console.warn('Failed to load events, using mock data:', error);
+      setEvents(MOCK_EVENTS);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <GradientBackground>
       <StatusBar barStyle="light-content" />
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={styles.container} edges={['bottom', 'left', 'right']}>
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
@@ -104,16 +142,20 @@ export const EventsScreen: React.FC<EventsScreenProps> = ({ onEventPress }) => {
           </View>
 
           {/* Events List */}
-          <View style={styles.eventsList}>
-            {MOCK_EVENTS.map((event, index) => (
-              <EventCard
-                key={event.id}
-                event={event}
-                onPress={() => onEventPress(event.id)}
-                delay={index * 100}
-              />
-            ))}
-          </View>
+          {loading ? (
+            <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 40 }} />
+          ) : (
+            <View style={styles.eventsList}>
+              {events.map((event, index) => (
+                <EventCard
+                  key={event.id}
+                  event={event}
+                  onPress={() => onEventPress(event.id)}
+                  delay={index * 100}
+                />
+              ))}
+            </View>
+          )}
         </ScrollView>
       </SafeAreaView>
     </GradientBackground>
@@ -122,7 +164,7 @@ export const EventsScreen: React.FC<EventsScreenProps> = ({ onEventPress }) => {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  scrollContent: { padding: spacing.xl, paddingTop: 40 },
+  scrollContent: { padding: spacing.xl, paddingTop: 40, paddingBottom: 80 },
   header: { alignItems: 'center', marginBottom: 30 },
   subtitle: { 
     color: colors.textSecondary, 
@@ -155,7 +197,7 @@ const styles = StyleSheet.create({
   eventInfo: { flex: 1 },
   eventTitle: { 
     fontSize: 18, 
-    fontWeight: '700', 
+    fontFamily: fonts.headingBold, 
     color: colors.text,
     letterSpacing: 0.5,
     marginBottom: 4,
@@ -173,3 +215,6 @@ const styles = StyleSheet.create({
 });
 
 export default EventsScreen;
+
+
+

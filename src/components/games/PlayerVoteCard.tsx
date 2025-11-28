@@ -57,7 +57,7 @@ export const PlayerVoteCard: React.FC<PlayerVoteCardProps> = ({
       activeOpacity={0.8}
       disabled={disabled}
     >
-      <Avatar name={name} size={60} gender={gender} />
+      <Avatar name={name} size={50} gender={gender} />
       <Text style={[styles.name, isSelected && styles.nameSelected]}>{name}</Text>
 
       {showVotes && voteCount > 0 && (
@@ -78,12 +78,15 @@ export const PlayerVoteCard: React.FC<PlayerVoteCardProps> = ({
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
-    padding: 15,
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 12,
     backgroundColor: colors.glassBg,
-    borderWidth: 2,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: borderRadius.lg,
-    minWidth: 100,
+    borderWidth: 1,
+    borderColor: colors.cardBorder,
+    borderRadius: borderRadius.md,
+    minWidth: 90,
+    position: 'relative',
   },
   containerSelected: {
     borderColor: colors.primary,
@@ -98,6 +101,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: colors.text,
     marginTop: 10,
+    textAlign: 'center',
   },
   nameSelected: {
     color: colors.primary,
@@ -107,9 +111,11 @@ const styles = StyleSheet.create({
     top: 8,
     right: 8,
     backgroundColor: colors.primary,
-    borderRadius: 12,
-    paddingHorizontal: 8,
+    borderRadius: 10,
+    paddingHorizontal: 6,
     paddingVertical: 2,
+    minWidth: 20,
+    alignItems: 'center',
   },
   voteCount: {
     fontSize: 12,
@@ -118,11 +124,11 @@ const styles = StyleSheet.create({
   },
   checkmark: {
     position: 'absolute',
-    top: -8,
-    right: -8,
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    top: 8,
+    right: 8,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
     backgroundColor: colors.success,
     alignItems: 'center',
     justifyContent: 'center',

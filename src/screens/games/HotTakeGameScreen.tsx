@@ -1,4 +1,4 @@
-﻿/**
+/**
  * HotTakeGameScreen - "Most Likely To" voting game
  * Players vote on who is most likely to do something
  */
@@ -8,14 +8,14 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   StatusBar,
   ScrollView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn, SlideInRight } from '../../shims/reanimated';
 import { GradientBackground, Button, Card } from '../../components/common';
 import { GameHeader, PlayerVoteCard } from '../../components/games';
-import { colors, spacing } from '../../theme';
+import { colors, spacing, fonts } from '../../theme';
 import { HapticService } from '../../services/haptics';
 
 interface HotTakeGameScreenProps {
@@ -105,7 +105,7 @@ export const HotTakeGameScreen: React.FC<HotTakeGameScreenProps> = ({
   return (
     <GradientBackground>
       <StatusBar barStyle="light-content" />
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={styles.container} edges={['bottom', 'left', 'right']}>
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
           <GameHeader
             title="Hot Take"
@@ -168,13 +168,15 @@ export const HotTakeGameScreen: React.FC<HotTakeGameScreenProps> = ({
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  content: { padding: spacing.xl, paddingTop: 40 },
-  promptCard: { paddingVertical: 30, alignItems: 'center', marginBottom: 25 },
+  content: { padding: spacing.xl, paddingTop: 40, paddingBottom: 80 },
+  promptCard: { paddingVertical: spacing.xl, alignItems: 'center', marginBottom: spacing.lg },
   promptLabel: { fontSize: 12, color: colors.primary, fontWeight: '600', letterSpacing: 2, marginBottom: 10 },
-  prompt: { fontSize: 24, fontWeight: '700', color: colors.text, textAlign: 'center' },
-  playersGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 12, marginBottom: 25 },
-  buttonContainer: { paddingTop: spacing.md },
+  prompt: { fontSize: 24, fontFamily: fonts.headingBold, color: colors.text, textAlign: 'center' },
+  playersGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: spacing.sm, marginBottom: spacing.lg, paddingHorizontal: spacing.xs },
+  buttonContainer: { paddingTop: spacing.lg },
   backButton: { marginTop: spacing.md },
 });
 
 export default HotTakeGameScreen;
+
+
