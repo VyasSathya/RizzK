@@ -107,7 +107,8 @@ export const EventDetailScreen: React.FC<EventDetailScreenProps> = ({
     setLoading(true);
 
     try {
-      await registerForEvent(eventId);
+      // Pass user.id for dev mode (when no real Supabase auth)
+      await registerForEvent(eventId, user.id);
       HapticService.success();
       onRegister();
     } catch (err: any) {

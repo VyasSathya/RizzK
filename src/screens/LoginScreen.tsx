@@ -28,7 +28,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
   onLogin,
   onBack,
 }) => {
-  const { signIn, loading } = useAuth();
+  const { signIn, loading, setDevUser } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -37,8 +37,9 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
     setError('');
     HapticService.medium();
 
-    // DEV MODE: Skip auth if empty credentials
+    // DEV MODE: Skip auth if empty credentials - set dev user
     if (!email && !password) {
+      setDevUser();
       HapticService.success();
       onLogin();
       return;

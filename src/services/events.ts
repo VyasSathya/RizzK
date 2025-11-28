@@ -60,16 +60,20 @@ export async function getEvent(id: string): Promise<Event | null> {
 
 /**
  * Register for an event
+ * @param eventId - Event ID to register for
+ * @param devUserId - Optional user ID for dev mode (when no real auth)
  */
-export async function registerForEvent(eventId: string): Promise<void> {
+export async function registerForEvent(eventId: string, devUserId?: string): Promise<void> {
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error('Must be logged in to register');
+  const userId = user?.id || devUserId;
+
+  if (!userId) throw new Error('Must be logged in to register');
 
   const { error } = await supabase
     .from('event_attendees')
     .insert({
       event_id: eventId,
-      user_id: user.id,
+      user_id: userId,
       status: 'registered',
     });
 

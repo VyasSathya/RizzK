@@ -11,7 +11,17 @@ interface AuthContextType {
   signUp: (data: SignUpData) => Promise<void>;
   signIn: (data: SignInData) => Promise<void>;
   signOut: () => Promise<void>;
+  setDevUser: () => void;
 }
+
+// Dev mode user for testing without real auth
+const DEV_USER: AuthUser = {
+  id: 'dev-user-001',
+  email: 'dev@rizzk.test',
+  fullName: 'Dev Tester',
+  age: 25,
+  gender: 'male',
+};
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -70,6 +80,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  // Dev mode: set a fake user for testing
+  const setDevUser = () => {
+    setUser(DEV_USER);
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -78,6 +93,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         signUp: handleSignUp,
         signIn: handleSignIn,
         signOut: handleSignOut,
+        setDevUser,
       }}
     >
       {children}
