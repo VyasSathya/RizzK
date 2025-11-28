@@ -1,9 +1,9 @@
 /**
  * BattleOfSexesScreen - Team trivia battle
- * Enhanced with full UX flow
+ * With real multiplayer teams based on gender!
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -19,8 +19,11 @@ import { GradientBackground, Button, Card } from '../../components/common';
 import { GameHeader, GameIntro, WaitingOverlay, RoundTransition, GameResults } from '../../components/games';
 import { colors, spacing, borderRadius, fonts } from '../../theme';
 import { HapticService } from '../../services/haptics';
+import { useGameSession } from '../../hooks/useGameSession';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface BattleOfSexesScreenProps {
+  eventId?: string;
   onComplete: () => void;
   onBack: () => void;
 }
@@ -34,9 +37,13 @@ const QUESTIONS = [
 ];
 
 export const BattleOfSexesScreen: React.FC<BattleOfSexesScreenProps> = ({
+  eventId,
   onComplete,
   onBack,
 }) => {
+  const { user } = useAuth();
+  const gameSession = eventId ? useGameSession({ eventId, gameType: 'battle_of_sexes' }) : null;
+
   const [phase, setPhase] = useState<'intro' | 'playing' | 'waiting' | 'reveal' | 'transition' | 'results'>('intro');
   const [currentRound, setCurrentRound] = useState(1);
   const [timeLeft, setTimeLeft] = useState(20);
@@ -44,6 +51,29 @@ export const BattleOfSexesScreen: React.FC<BattleOfSexesScreenProps> = ({
   const [scores, setScores] = useState({ men: 0, women: 0 });
   const [chipsEarned, setChipsEarned] = useState(0);
   const totalRounds = QUESTIONS.length;
+
+  // Determine current player's team based on their gender
+  const myTeam = useMemo(() => {
+    if (gameSession?.currentPlayer?.team) return gameSession.currentPlayer.team;
+    // Fallback: check user profile gender
+    return 'men'; // Default - would come from user profile
+  }, [gameSession?.currentPlayer]);
+
+  // Get team counts for display
+  const teamCounts = useMemo(() => {
+    if (!gameSession?.teams) return { men: 0, women: 0 };
+    return {
+      men: gameSession.teams.men.length,
+      women: gameSession.teams.women.length,
+    };
+  }, [gameSession?.teams]);
+
+  // Auto-assign teams when game starts
+  useEffect(() => {
+    if (phase === 'intro' && gameSession?.session && gameSession.isHost) {
+      gameSession.assignTeams();
+    }
+  }, [phase, gameSession?.session, gameSession?.isHost]);
 
   const currentQ = QUESTIONS[(currentRound - 1) % QUESTIONS.length];
 

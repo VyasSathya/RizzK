@@ -1,9 +1,9 @@
 /**
  * HotTakeGameScreen - "Most Likely To" voting game
- * Enhanced with full UX flow
+ * Now with real multiplayer support!
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -24,8 +24,12 @@ import {
 } from '../../components/games';
 import { colors, spacing, fonts } from '../../theme';
 import { HapticService } from '../../services/haptics';
+import { useGameSession } from '../../hooks/useGameSession';
+import { GamePlayer } from '../../services/gameSession';
 
 interface HotTakeGameScreenProps {
+  eventId?: string;
+  players?: { id: string; name: string; gender: 'male' | 'female' }[];
   onComplete: () => void;
   onBack: () => void;
 }
@@ -41,7 +45,8 @@ const PROMPTS = [
   "Most likely to start a viral trend",
 ];
 
-const PLAYERS = [
+// Fallback mock players when not connected to event
+const MOCK_PLAYERS = [
   { id: '1', name: 'Maya', gender: 'female' as const },
   { id: '2', name: 'Alex', gender: 'male' as const },
   { id: '3', name: 'Sam', gender: 'male' as const },
@@ -50,9 +55,14 @@ const PLAYERS = [
 ];
 
 export const HotTakeGameScreen: React.FC<HotTakeGameScreenProps> = ({
+  eventId,
+  players: propPlayers,
   onComplete,
   onBack,
 }) => {
+  // Use multiplayer hook if eventId provided
+  const gameSession = eventId ? useGameSession({ eventId, gameType: 'hot_take' }) : null;
+
   const [phase, setPhase] = useState<'intro' | 'playing' | 'waiting' | 'reveal' | 'transition' | 'results'>('intro');
   const [currentRound, setCurrentRound] = useState(1);
   const [timeLeft, setTimeLeft] = useState(30);
@@ -62,7 +72,53 @@ export const HotTakeGameScreen: React.FC<HotTakeGameScreenProps> = ({
   const [chipsEarned, setChipsEarned] = useState(0);
   const totalRounds = 5;
 
+  // Use real players from session, prop players, or fallback to mock
+  const activePlayers = useMemo(() => {
+    if (gameSession?.players && gameSession.players.length > 0) {
+      return gameSession.players.map(p => ({
+        id: p.user_id,
+        name: p.profile?.first_name || 'Player',
+        gender: (p.profile?.gender as 'male' | 'female') || 'male',
+      }));
+    }
+    return propPlayers || MOCK_PLAYERS;
+  }, [gameSession?.players, propPlayers]);
+
   const currentPrompt = PROMPTS[(currentRound - 1) % PROMPTS.length];
+
+  // Count votes from real-time actions
+  useEffect(() => {
+    if (!gameSession?.actions) return;
+    const roundVotes: Record<string, number> = {};
+    gameSession.actions.forEach(action => {
+      if (action.round === currentRound && action.action_type === 'vote') {
+        const votedFor = action.action_data.votedFor;
+        roundVotes[votedFor] = (roundVotes[votedFor] || 0) + 1;
+      }
+    });
+    if (Object.keys(roundVotes).length > 0) {
+      setVotes(roundVotes);
+    }
+  }, [gameSession?.actions, currentRound]);
+
+  // Check if all players voted (for real multiplayer)
+  useEffect(() => {
+    if (!gameSession || phase !== 'waiting') return;
+    const votesThisRound = gameSession.actions.filter(
+      a => a.round === currentRound && a.action_type === 'vote'
+    ).length;
+    if (votesThisRound >= activePlayers.length) {
+      // Everyone voted - reveal!
+      const maxVotes = Math.max(...Object.values(votes), 0);
+      if (votes[selectedPlayer!] === maxVotes) {
+        setScore(s => s + 50);
+        setChipsEarned(c => c + 5);
+        gameSession.addScore(50, 5);
+        HapticService.success();
+      }
+      setPhase('reveal');
+    }
+  }, [gameSession?.actions, phase, activePlayers.length, currentRound, votes, selectedPlayer]);
 
   useEffect(() => {
     if (phase !== 'playing') return;
@@ -84,36 +140,48 @@ export const HotTakeGameScreen: React.FC<HotTakeGameScreenProps> = ({
     setSelectedPlayer(playerId);
   };
 
-  const handleVoteSubmit = () => {
+  const handleVoteSubmit = async () => {
     if (!selectedPlayer) return;
     HapticService.medium();
     setPhase('waiting');
 
-    // Simulate waiting for others
-    setTimeout(() => {
-      const newVotes: Record<string, number> = {};
-      PLAYERS.forEach(p => {
-        newVotes[p.id] = Math.floor(Math.random() * 3);
-      });
-      newVotes[selectedPlayer] = (newVotes[selectedPlayer] || 0) + 1;
-      setVotes(newVotes);
+    // Submit vote to real-time session
+    if (gameSession) {
+      await gameSession.submitAnswer('vote', { votedFor: selectedPlayer, prompt: currentPrompt });
+    }
 
-      // Award points if you voted for winner
-      const maxVotes = Math.max(...Object.values(newVotes));
-      if (newVotes[selectedPlayer] === maxVotes) {
-        setScore(s => s + 50);
-        setChipsEarned(c => c + 5);
-        HapticService.success();
-      }
-      setPhase('reveal');
-    }, 1500 + Math.random() * 1500);
+    // For non-multiplayer or as fallback, simulate other votes after delay
+    if (!gameSession || activePlayers.length <= 1) {
+      setTimeout(() => {
+        const newVotes: Record<string, number> = {};
+        activePlayers.forEach(p => {
+          newVotes[p.id] = Math.floor(Math.random() * 3);
+        });
+        newVotes[selectedPlayer] = (newVotes[selectedPlayer] || 0) + 1;
+        setVotes(newVotes);
+
+        const maxVotes = Math.max(...Object.values(newVotes));
+        if (newVotes[selectedPlayer] === maxVotes) {
+          setScore(s => s + 50);
+          setChipsEarned(c => c + 5);
+          HapticService.success();
+        }
+        setPhase('reveal');
+      }, 1500 + Math.random() * 1500);
+    }
   };
 
-  const handleNextRound = () => {
+  const handleNextRound = async () => {
     if (currentRound < totalRounds) {
       setPhase('transition');
+      if (gameSession?.isHost) {
+        await gameSession.nextRound();
+      }
     } else {
       setPhase('results');
+      if (gameSession) {
+        await gameSession.finish();
+      }
     }
   };
 
@@ -169,7 +237,7 @@ export const HotTakeGameScreen: React.FC<HotTakeGameScreenProps> = ({
       <WaitingOverlay
         visible={phase === 'waiting'}
         message="Tallying votes..."
-        players={PLAYERS.map(p => ({ ...p, ready: Math.random() > 0.3 }))}
+        players={activePlayers.map(p => ({ ...p, ready: Math.random() > 0.3 }))}
       />
 
       <RoundTransition
@@ -200,7 +268,7 @@ export const HotTakeGameScreen: React.FC<HotTakeGameScreenProps> = ({
 
           {/* Players Grid */}
           <View style={styles.playersGrid}>
-            {PLAYERS.map((player) => (
+            {activePlayers.map((player) => (
               <PlayerVoteCard
                 key={player.id}
                 name={player.name}
