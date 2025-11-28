@@ -1,6 +1,6 @@
 /**
  * BattleOfSexesScreen - Team trivia battle
- * Men vs Women trivia competition
+ * Enhanced with full UX flow
  */
 
 import React, { useState, useEffect } from 'react';
@@ -16,7 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn, SlideInRight, FadeInDown } from '../../shims/reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { GradientBackground, Button, Card } from '../../components/common';
-import { GameHeader } from '../../components/games';
+import { GameHeader, GameIntro, WaitingOverlay, RoundTransition, GameResults } from '../../components/games';
 import { colors, spacing, borderRadius, fonts } from '../../theme';
 import { HapticService } from '../../services/haptics';
 
@@ -37,17 +37,18 @@ export const BattleOfSexesScreen: React.FC<BattleOfSexesScreenProps> = ({
   onComplete,
   onBack,
 }) => {
+  const [phase, setPhase] = useState<'intro' | 'playing' | 'waiting' | 'reveal' | 'transition' | 'results'>('intro');
   const [currentRound, setCurrentRound] = useState(1);
   const [timeLeft, setTimeLeft] = useState(20);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
-  const [revealed, setRevealed] = useState(false);
   const [scores, setScores] = useState({ men: 0, women: 0 });
+  const [chipsEarned, setChipsEarned] = useState(0);
   const totalRounds = QUESTIONS.length;
 
   const currentQ = QUESTIONS[(currentRound - 1) % QUESTIONS.length];
 
   useEffect(() => {
-    if (revealed) return;
+    if (phase !== 'playing') return;
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
@@ -58,45 +59,104 @@ export const BattleOfSexesScreen: React.FC<BattleOfSexesScreenProps> = ({
       });
     }, 1000);
     return () => clearInterval(timer);
-  }, [revealed, currentRound]);
+  }, [phase, currentRound]);
 
   const handleSelect = (index: number) => {
-    if (revealed) return;
+    if (phase !== 'playing') return;
     HapticService.light();
     setSelectedAnswer(index);
   };
 
   const handleReveal = () => {
+    if (selectedAnswer === null) return;
     HapticService.medium();
-    setRevealed(true);
-    if (selectedAnswer === currentQ.answer) {
-      HapticService.success();
-      setScores(prev => ({
-        ...prev,
-        [currentQ.forTeam === 'men' ? 'women' : 'men']: prev[currentQ.forTeam === 'men' ? 'women' : 'men'] + 1
-      }));
-    }
+    setPhase('waiting');
+
+    setTimeout(() => {
+      if (selectedAnswer === currentQ.answer) {
+        HapticService.success();
+        const team = currentQ.forTeam === 'men' ? 'women' : 'men';
+        setScores(prev => ({ ...prev, [team]: prev[team] + 1 }));
+        setChipsEarned(c => c + 10);
+      }
+      setPhase('reveal');
+    }, 1500 + Math.random() * 1000);
   };
 
   const handleNext = () => {
-    HapticService.light();
     if (currentRound < totalRounds) {
-      setCurrentRound(currentRound + 1);
-      setSelectedAnswer(null);
-      setRevealed(false);
-      setTimeLeft(20);
+      setPhase('transition');
     } else {
-      HapticService.success();
-      onComplete();
+      setPhase('results');
     }
   };
+
+  const startNextRound = () => {
+    setCurrentRound(currentRound + 1);
+    setSelectedAnswer(null);
+    setTimeLeft(20);
+    setPhase('playing');
+  };
+
+  // Results screen
+  if (phase === 'results') {
+    const winner = scores.men > scores.women ? 'Men' : scores.women > scores.men ? 'Women' : 'Tie';
+    return (
+      <GradientBackground>
+        <StatusBar barStyle="light-content" />
+        <SafeAreaView style={styles.container} edges={['bottom', 'left', 'right']}>
+          <GameResults
+            gameName="Battle of Sexes"
+            gameIcon="users"
+            score={scores.men + scores.women}
+            chipsEarned={chipsEarned}
+            stats={[
+              { label: 'Men Score', value: scores.men },
+              { label: 'Women Score', value: scores.women },
+              { label: 'Winner', value: winner },
+            ]}
+            onContinue={onComplete}
+            onPlayAgain={() => {
+              setPhase('intro');
+              setCurrentRound(1);
+              setScores({ men: 0, women: 0 });
+              setChipsEarned(0);
+            }}
+          />
+        </SafeAreaView>
+      </GradientBackground>
+    );
+  }
 
   return (
     <GradientBackground>
       <StatusBar barStyle="light-content" />
+
+      <GameIntro
+        visible={phase === 'intro'}
+        gameName="Battle of Sexes"
+        gameIcon="users"
+        description="Men vs Women! Answer questions about the opposite gender to score points for your team."
+        rules={['Answer about the other team', 'Correct = point for your team', 'Most points wins!']}
+        onComplete={() => setPhase('playing')}
+      />
+
+      <WaitingOverlay
+        visible={phase === 'waiting'}
+        message="Checking answers..."
+      />
+
+      <RoundTransition
+        visible={phase === 'transition'}
+        currentRound={currentRound + 1}
+        totalRounds={totalRounds}
+        message={`${currentQ.forTeam === 'men' ? 'Women' : 'Men'}'s turn next!`}
+        onComplete={startNextRound}
+      />
+
       <SafeAreaView style={styles.container} edges={['bottom', 'left', 'right']}>
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-          <GameHeader title="Battle of Sexes" icon="users" currentRound={currentRound} totalRounds={totalRounds} timeLeft={timeLeft} showTimer={!revealed} />
+          <GameHeader title="Battle of Sexes" icon="users" currentRound={currentRound} totalRounds={totalRounds} timeLeft={timeLeft} showTimer={phase === 'playing'} />
 
           {/* Score Board */}
           <View style={styles.scoreBoard}>
@@ -115,16 +175,21 @@ export const BattleOfSexesScreen: React.FC<BattleOfSexesScreenProps> = ({
           <Animated.View key={currentRound} entering={SlideInRight.duration(400)}>
             <Card variant="elevated" style={styles.questionCard}>
               <Text style={styles.forTeam}>
-                {currentQ.forTeam === 'men' ? 'Men answer:' : 'Women answer:'}
+                {currentQ.forTeam === 'men' ? '👨 Men answer:' : '👩 Women answer:'}
               </Text>
               <Text style={styles.question}>{currentQ.q}</Text>
               <View style={styles.options}>
                 {currentQ.options.map((opt, i) => (
                   <TouchableOpacity
                     key={i}
-                    style={[styles.option, selectedAnswer === i && styles.optionSelected, revealed && i === currentQ.answer && styles.optionCorrect, revealed && selectedAnswer === i && i !== currentQ.answer && styles.optionWrong]}
+                    style={[
+                      styles.option,
+                      selectedAnswer === i && styles.optionSelected,
+                      phase === 'reveal' && i === currentQ.answer && styles.optionCorrect,
+                      phase === 'reveal' && selectedAnswer === i && i !== currentQ.answer && styles.optionWrong
+                    ]}
                     onPress={() => handleSelect(i)}
-                    disabled={revealed}
+                    disabled={phase !== 'playing'}
                   >
                     <Text style={styles.optionText}>{opt}</Text>
                   </TouchableOpacity>
@@ -133,11 +198,21 @@ export const BattleOfSexesScreen: React.FC<BattleOfSexesScreenProps> = ({
             </Card>
           </Animated.View>
 
+          {/* Result message */}
+          {phase === 'reveal' && (
+            <Animated.View entering={FadeInDown.duration(400)} style={styles.resultMessage}>
+              <Text style={styles.resultText}>
+                {selectedAnswer === currentQ.answer ? '✅ Correct! +10 chips' : '❌ Wrong answer!'}
+              </Text>
+            </Animated.View>
+          )}
+
           {/* Buttons */}
           <View style={styles.buttonContainer}>
-            {!revealed ? (
+            {phase === 'playing' && (
               <Button title="Lock In" onPress={handleReveal} variant="primary" disabled={selectedAnswer === null} haptic="medium" />
-            ) : (
+            )}
+            {phase === 'reveal' && (
               <Button title={currentRound < totalRounds ? 'Next Question' : 'See Results'} onPress={handleNext} variant="primary" haptic="medium" />
             )}
             <Button title="Back to Games" onPress={onBack} variant="secondary" style={styles.backButton} />
@@ -166,6 +241,8 @@ const styles = StyleSheet.create({
   optionCorrect: { borderColor: colors.success, backgroundColor: 'rgba(52, 199, 89, 0.15)' },
   optionWrong: { borderColor: colors.error, backgroundColor: 'rgba(255, 59, 48, 0.15)' },
   optionText: { fontSize: 16, color: colors.text, textAlign: 'center' },
+  resultMessage: { alignItems: 'center', marginBottom: spacing.lg },
+  resultText: { fontSize: 18, color: colors.primary, fontWeight: '600' },
   buttonContainer: { paddingTop: spacing.xl },
   backButton: { marginTop: spacing.md },
 });

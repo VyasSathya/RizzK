@@ -1,5 +1,6 @@
 /**
  * WhoSaidItScreen - Guess who said the quote
+ * Enhanced with full UX flow
  */
 
 import React, { useState, useEffect } from 'react';
@@ -7,7 +8,7 @@ import { View, Text, StyleSheet, StatusBar, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn, SlideInRight, FadeInDown } from '../../shims/reanimated';
 import { GradientBackground, Button, Card } from '../../components/common';
-import { GameHeader, PlayerVoteCard } from '../../components/games';
+import { GameHeader, PlayerVoteCard, GameIntro, WaitingOverlay, RoundTransition, GameResults } from '../../components/games';
 import { colors, spacing, fonts } from '../../theme';
 import { HapticService } from '../../services/haptics';
 
@@ -30,17 +31,18 @@ const PLAYERS = [
 ];
 
 export const WhoSaidItScreen: React.FC<WhoSaidItScreenProps> = ({ onComplete, onBack }) => {
+  const [phase, setPhase] = useState<'intro' | 'playing' | 'waiting' | 'reveal' | 'transition' | 'results'>('intro');
   const [currentRound, setCurrentRound] = useState(1);
   const [timeLeft, setTimeLeft] = useState(20);
   const [selectedPlayer, setSelectedPlayer] = useState<string | null>(null);
-  const [revealed, setRevealed] = useState(false);
   const [score, setScore] = useState(0);
+  const [chipsEarned, setChipsEarned] = useState(0);
   const totalRounds = QUOTES.length;
 
   const currentQuote = QUOTES[(currentRound - 1) % QUOTES.length];
 
   useEffect(() => {
-    if (revealed) return;
+    if (phase !== 'playing') return;
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) { handleReveal(); return 0; }
@@ -48,38 +50,108 @@ export const WhoSaidItScreen: React.FC<WhoSaidItScreenProps> = ({ onComplete, on
       });
     }, 1000);
     return () => clearInterval(timer);
-  }, [revealed, currentRound]);
+  }, [phase, currentRound]);
 
   const handlePlayerSelect = (playerId: string) => {
-    if (revealed) return;
+    if (phase !== 'playing') return;
     HapticService.light();
     setSelectedPlayer(playerId);
   };
 
   const handleReveal = () => {
+    if (!selectedPlayer) return;
     HapticService.medium();
-    setRevealed(true);
-    const selectedName = PLAYERS.find(p => p.id === selectedPlayer)?.name;
-    if (selectedName === currentQuote.saidBy) { HapticService.success(); setScore(score + 1); }
-    else { HapticService.error(); }
+    setPhase('waiting');
+
+    setTimeout(() => {
+      const selectedName = PLAYERS.find(p => p.id === selectedPlayer)?.name;
+      if (selectedName === currentQuote.saidBy) {
+        HapticService.success();
+        setScore(s => s + 1);
+        setChipsEarned(c => c + 10);
+      } else {
+        HapticService.error();
+      }
+      setPhase('reveal');
+    }, 1500 + Math.random() * 1000);
   };
 
   const handleNext = () => {
-    HapticService.light();
-    if (currentRound < totalRounds) { setCurrentRound(currentRound + 1); setSelectedPlayer(null); setRevealed(false); setTimeLeft(20); }
-    else { HapticService.success(); onComplete(); }
+    if (currentRound < totalRounds) {
+      setPhase('transition');
+    } else {
+      setPhase('results');
+    }
+  };
+
+  const startNextRound = () => {
+    setCurrentRound(currentRound + 1);
+    setSelectedPlayer(null);
+    setTimeLeft(20);
+    setPhase('playing');
   };
 
   const isCorrect = PLAYERS.find(p => p.id === selectedPlayer)?.name === currentQuote.saidBy;
-  const resultText = isCorrect ? 'Correct!' : 'It was ' + currentQuote.saidBy + '!';
+  const resultText = isCorrect ? '🎉 Correct! +10 chips' : '❌ It was ' + currentQuote.saidBy + '!';
+
+  // Results screen
+  if (phase === 'results') {
+    return (
+      <GradientBackground>
+        <StatusBar barStyle="light-content" />
+        <SafeAreaView style={styles.container} edges={['bottom', 'left', 'right']}>
+          <GameResults
+            gameName="Who Said It?"
+            gameIcon="message-circle"
+            score={score * 100}
+            chipsEarned={chipsEarned}
+            stats={[
+              { label: 'Correct Guesses', value: score },
+              { label: 'Total Quotes', value: totalRounds },
+            ]}
+            onContinue={onComplete}
+            onPlayAgain={() => {
+              setPhase('intro');
+              setCurrentRound(1);
+              setScore(0);
+              setChipsEarned(0);
+            }}
+          />
+        </SafeAreaView>
+      </GradientBackground>
+    );
+  }
 
   return (
     <GradientBackground>
       <StatusBar barStyle="light-content" />
+
+      <GameIntro
+        visible={phase === 'intro'}
+        gameName="Who Said It?"
+        gameIcon="message-circle"
+        description="Match the quote to the person who said it! How well do you know your group?"
+        rules={['Read the quote', 'Guess who said it', 'Learn fun facts!']}
+        onComplete={() => setPhase('playing')}
+      />
+
+      <WaitingOverlay
+        visible={phase === 'waiting'}
+        message="Checking your guess..."
+      />
+
+      <RoundTransition
+        visible={phase === 'transition'}
+        currentRound={currentRound + 1}
+        totalRounds={totalRounds}
+        message="Next quote coming up!"
+        onComplete={startNextRound}
+      />
+
       <SafeAreaView style={styles.container} edges={['bottom', 'left', 'right']}>
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-          <GameHeader title="Who Said It?" icon="message-circle" currentRound={currentRound} totalRounds={totalRounds} timeLeft={timeLeft} showTimer={!revealed} />
-          <Text style={styles.score}>Score: {score}/{currentRound - (revealed ? 0 : 1)}</Text>
+          <GameHeader title="Who Said It?" icon="message-circle" currentRound={currentRound} totalRounds={totalRounds} timeLeft={timeLeft} showTimer={phase === 'playing'} />
+          <Text style={styles.score}>Score: {score}/{currentRound - (phase === 'reveal' ? 0 : 1)}</Text>
           <Animated.View key={currentRound} entering={SlideInRight.duration(400)}>
             <Card variant="elevated" style={styles.quoteCard}>
               <Text style={styles.quoteLabel}>WHO SAID...</Text>
@@ -88,18 +160,26 @@ export const WhoSaidItScreen: React.FC<WhoSaidItScreenProps> = ({ onComplete, on
           </Animated.View>
           <View style={styles.playersGrid}>
             {PLAYERS.map((player) => (
-              <PlayerVoteCard key={player.id} name={player.name} gender={player.gender} isSelected={selectedPlayer === player.id || (revealed && player.name === currentQuote.saidBy)} onPress={() => handlePlayerSelect(player.id)} disabled={revealed} />
+              <PlayerVoteCard
+                key={player.id}
+                name={player.name}
+                gender={player.gender}
+                isSelected={selectedPlayer === player.id || (phase === 'reveal' && player.name === currentQuote.saidBy)}
+                onPress={() => handlePlayerSelect(player.id)}
+                disabled={phase !== 'playing'}
+              />
             ))}
           </View>
-          {revealed && (
+          {phase === 'reveal' && (
             <Animated.View entering={FadeInDown.duration(400)} style={styles.resultContainer}>
               <Text style={isCorrect ? styles.resultCorrect : styles.resultWrong}>{resultText}</Text>
             </Animated.View>
           )}
           <View style={styles.buttonContainer}>
-            {!revealed ? (
+            {phase === 'playing' && (
               <Button title="Lock In Guess" onPress={handleReveal} variant="primary" disabled={!selectedPlayer} haptic="medium" />
-            ) : (
+            )}
+            {phase === 'reveal' && (
               <Button title={currentRound < totalRounds ? 'Next Quote' : 'See Results'} onPress={handleNext} variant="primary" haptic="medium" />
             )}
             <Button title="Back to Games" onPress={onBack} variant="secondary" style={styles.backButton} />
