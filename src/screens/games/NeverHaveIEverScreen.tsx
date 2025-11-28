@@ -1,9 +1,9 @@
 /**
  * NeverHaveIEverScreen - Never Have I Ever game
- * Enhanced with full UX flow
+ * With multiplayer support
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -17,8 +17,11 @@ import { GradientBackground, Button, Card, Avatar } from '../../components/commo
 import { GameHeader, GameIntro, WaitingOverlay, RoundTransition, GameResults } from '../../components/games';
 import { colors, spacing, borderRadius, fonts } from '../../theme';
 import { HapticService } from '../../services/haptics';
+import { useGameSession } from '../../hooks/useGameSession';
 
 interface NeverHaveIEverScreenProps {
+  eventId?: string;
+  players?: { id: string; name: string; gender: 'male' | 'female' }[];
   onComplete: () => void;
   onBack: () => void;
 }
@@ -34,18 +37,32 @@ const PROMPTS = [
   "Never have I ever... cried during a breakup movie",
 ];
 
-const PLAYERS = [
-  { name: 'Maya', gender: 'female' as const },
-  { name: 'Alex', gender: 'male' as const },
-  { name: 'Sam', gender: 'male' as const },
-  { name: 'Jordan', gender: 'female' as const },
-  { name: 'Taylor', gender: 'male' as const },
+const MOCK_PLAYERS = [
+  { id: '1', name: 'Maya', gender: 'female' as const },
+  { id: '2', name: 'Alex', gender: 'male' as const },
+  { id: '3', name: 'Sam', gender: 'male' as const },
+  { id: '4', name: 'Jordan', gender: 'female' as const },
+  { id: '5', name: 'Taylor', gender: 'male' as const },
 ];
 
 export const NeverHaveIEverScreen: React.FC<NeverHaveIEverScreenProps> = ({
+  eventId,
+  players: propPlayers,
   onComplete,
   onBack,
 }) => {
+  const gameSession = eventId ? useGameSession({ eventId, gameType: 'never_have_i_ever' }) : null;
+
+  const activePlayers = useMemo(() => {
+    if (gameSession?.players && gameSession.players.length > 0) {
+      return gameSession.players.map(p => ({
+        id: p.user_id,
+        name: p.profile?.first_name || 'Player',
+        gender: (p.profile?.gender as 'male' | 'female') || 'male',
+      }));
+    }
+    return propPlayers || MOCK_PLAYERS;
+  }, [gameSession?.players, propPlayers]);
   const [phase, setPhase] = useState<'intro' | 'playing' | 'waiting' | 'reveal' | 'transition' | 'results'>('intro');
   const [currentRound, setCurrentRound] = useState(1);
   const [timeLeft, setTimeLeft] = useState(15);
@@ -156,7 +173,7 @@ export const NeverHaveIEverScreen: React.FC<NeverHaveIEverScreenProps> = ({
       <WaitingOverlay
         visible={phase === 'waiting'}
         message="Collecting confessions..."
-        players={PLAYERS.map(p => ({ id: p.name, ...p }))}
+        players={activePlayers.map(p => ({ ...p, ready: Math.random() > 0.3 }))}
       />
 
       <RoundTransition

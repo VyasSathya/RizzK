@@ -1,9 +1,9 @@
 /**
  * TwoTruthsGameScreen - Two Truths and a Lie
- * Enhanced with full UX flow: intro → play → wait → reveal → results
+ * With multiplayer support
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -24,13 +24,17 @@ import {
 } from '../../components/games';
 import { colors, spacing, borderRadius, fonts } from '../../theme';
 import { HapticService } from '../../services/haptics';
+import { useGameSession } from '../../hooks/useGameSession';
 
 interface TwoTruthsGameScreenProps {
+  eventId?: string;
+  players?: { id: string; name: string; gender: 'male' | 'female' }[];
   onComplete: () => void;
   onBack: () => void;
 }
 
-const ROUNDS = [
+// Fallback mock rounds
+const MOCK_ROUNDS = [
   { player: 'Maya', gender: 'female' as const, statements: ['I\'ve been skydiving twice', 'I can speak 3 languages', 'I\'ve never broken a bone'], lie: 1 },
   { player: 'Alex', gender: 'male' as const, statements: ['I\'ve met a celebrity', 'I can juggle', 'I\'ve never been on a plane'], lie: 2 },
   { player: 'Sam', gender: 'male' as const, statements: ['I have a twin sibling', 'I\'ve climbed a mountain', 'I can play piano'], lie: 0 },
@@ -39,9 +43,25 @@ const ROUNDS = [
 ];
 
 export const TwoTruthsGameScreen: React.FC<TwoTruthsGameScreenProps> = ({
+  eventId,
+  players: propPlayers,
   onComplete,
   onBack,
 }) => {
+  const gameSession = eventId ? useGameSession({ eventId, gameType: 'two_truths' }) : null;
+
+  // Get active players for the game
+  const activePlayers = useMemo(() => {
+    if (gameSession?.players && gameSession.players.length > 0) {
+      return gameSession.players.map(p => ({
+        id: p.user_id,
+        name: p.profile?.first_name || 'Player',
+        gender: (p.profile?.gender as 'male' | 'female') || 'male',
+      }));
+    }
+    return propPlayers || MOCK_ROUNDS.map(r => ({ id: r.player, name: r.player, gender: r.gender }));
+  }, [gameSession?.players, propPlayers]);
+
   // Game phases
   const [phase, setPhase] = useState<'intro' | 'playing' | 'waiting' | 'reveal' | 'transition' | 'results'>('intro');
   const [currentRound, setCurrentRound] = useState(1);
@@ -49,9 +69,9 @@ export const TwoTruthsGameScreen: React.FC<TwoTruthsGameScreenProps> = ({
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [score, setScore] = useState(0);
   const [chipsEarned, setChipsEarned] = useState(0);
-  const totalRounds = ROUNDS.length;
+  const totalRounds = Math.min(activePlayers.length, MOCK_ROUNDS.length);
 
-  const currentData = ROUNDS[(currentRound - 1) % ROUNDS.length];
+  const currentData = MOCK_ROUNDS[(currentRound - 1) % MOCK_ROUNDS.length];
 
   // Timer for playing phase
   useEffect(() => {

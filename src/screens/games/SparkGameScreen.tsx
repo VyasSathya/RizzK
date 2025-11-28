@@ -1,9 +1,9 @@
 /**
  * SparkGameScreen - Deep conversation questions
- * Enhanced with full UX flow
+ * With multiplayer support
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -18,8 +18,11 @@ import { GradientBackground, Button, Card, Avatar, Icon } from '../../components
 import { GameHeader, GameIntro, PlayerTurnTransition, RoundTransition, GameResults } from '../../components/games';
 import { colors, spacing, borderRadius, shadows, fonts } from '../../theme';
 import { HapticService } from '../../services/haptics';
+import { useGameSession } from '../../hooks/useGameSession';
 
 interface SparkGameScreenProps {
+  eventId?: string;
+  players?: { id: string; name: string; gender: 'male' | 'female' }[];
   onComplete: () => void;
   onBack: () => void;
 }
@@ -37,19 +40,34 @@ const QUESTIONS = [
   "What does your ideal Sunday look like?",
 ];
 
-const PLAYERS = [
-  { name: 'You', gender: 'male' as const },
-  { name: 'Maya', gender: 'female' as const },
-  { name: 'Alex', gender: 'male' as const },
-  { name: 'Sam', gender: 'male' as const },
-  { name: 'Jordan', gender: 'female' as const },
-  { name: 'Taylor', gender: 'male' as const },
+const MOCK_PLAYERS = [
+  { id: '0', name: 'You', gender: 'male' as const },
+  { id: '1', name: 'Maya', gender: 'female' as const },
+  { id: '2', name: 'Alex', gender: 'male' as const },
+  { id: '3', name: 'Sam', gender: 'male' as const },
+  { id: '4', name: 'Jordan', gender: 'female' as const },
+  { id: '5', name: 'Taylor', gender: 'male' as const },
 ];
 
 export const SparkGameScreen: React.FC<SparkGameScreenProps> = ({
+  eventId,
+  players: propPlayers,
   onComplete,
   onBack,
 }) => {
+  const gameSession = eventId ? useGameSession({ eventId, gameType: 'spark' }) : null;
+
+  const activePlayers = useMemo(() => {
+    if (gameSession?.players && gameSession.players.length > 0) {
+      return gameSession.players.map(p => ({
+        id: p.user_id,
+        name: p.profile?.first_name || 'Player',
+        gender: (p.profile?.gender as 'male' | 'female') || 'male',
+      }));
+    }
+    return propPlayers || MOCK_PLAYERS;
+  }, [gameSession?.players, propPlayers]);
+
   const [phase, setPhase] = useState<'intro' | 'playing' | 'playerTurn' | 'transition' | 'results'>('intro');
   const [currentRound, setCurrentRound] = useState(1);
   const [timeLeft, setTimeLeft] = useState(60);
@@ -59,7 +77,7 @@ export const SparkGameScreen: React.FC<SparkGameScreenProps> = ({
   const totalRounds = 5;
 
   const currentQuestion = QUESTIONS[(currentRound - 1) % QUESTIONS.length];
-  const currentPlayer = PLAYERS[currentPlayerIndex];
+  const currentPlayer = activePlayers[currentPlayerIndex] || activePlayers[0];
 
   useEffect(() => {
     if (phase !== 'playing') return;
@@ -79,7 +97,7 @@ export const SparkGameScreen: React.FC<SparkGameScreenProps> = ({
     HapticService.light();
     setScore(s => s + 10);
     setChipsEarned(c => c + 2);
-    if (currentPlayerIndex < PLAYERS.length - 1) {
+    if (currentPlayerIndex < activePlayers.length - 1) {
       setPhase('playerTurn');
     } else {
       handleNextRound();

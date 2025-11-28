@@ -1,9 +1,9 @@
 /**
  * WhoSaidItScreen - Guess who said the quote
- * Enhanced with full UX flow
+ * With multiplayer support
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { View, Text, StyleSheet, StatusBar, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn, SlideInRight, FadeInDown } from '../../shims/reanimated';
@@ -11,8 +11,14 @@ import { GradientBackground, Button, Card } from '../../components/common';
 import { GameHeader, PlayerVoteCard, GameIntro, WaitingOverlay, RoundTransition, GameResults } from '../../components/games';
 import { colors, spacing, fonts } from '../../theme';
 import { HapticService } from '../../services/haptics';
+import { useGameSession } from '../../hooks/useGameSession';
 
-interface WhoSaidItScreenProps { onComplete: () => void; onBack: () => void; }
+interface WhoSaidItScreenProps {
+  eventId?: string;
+  players?: { id: string; name: string; gender: 'male' | 'female' }[];
+  onComplete: () => void;
+  onBack: () => void;
+}
 
 const QUOTES = [
   { quote: "I once stayed up for 48 hours binge-watching a show", saidBy: 'Maya' },
@@ -22,7 +28,7 @@ const QUOTES = [
   { quote: "I believe in love at first sight", saidBy: 'Taylor' },
 ];
 
-const PLAYERS = [
+const MOCK_PLAYERS = [
   { id: '1', name: 'Maya', gender: 'female' as const },
   { id: '2', name: 'Alex', gender: 'male' as const },
   { id: '3', name: 'Sam', gender: 'male' as const },
@@ -30,7 +36,24 @@ const PLAYERS = [
   { id: '5', name: 'Taylor', gender: 'male' as const },
 ];
 
-export const WhoSaidItScreen: React.FC<WhoSaidItScreenProps> = ({ onComplete, onBack }) => {
+export const WhoSaidItScreen: React.FC<WhoSaidItScreenProps> = ({
+  eventId,
+  players: propPlayers,
+  onComplete,
+  onBack,
+}) => {
+  const gameSession = eventId ? useGameSession({ eventId, gameType: 'who_said_it' }) : null;
+
+  const activePlayers = useMemo(() => {
+    if (gameSession?.players && gameSession.players.length > 0) {
+      return gameSession.players.map(p => ({
+        id: p.user_id,
+        name: p.profile?.first_name || 'Player',
+        gender: (p.profile?.gender as 'male' | 'female') || 'male',
+      }));
+    }
+    return propPlayers || MOCK_PLAYERS;
+  }, [gameSession?.players, propPlayers]);
   const [phase, setPhase] = useState<'intro' | 'playing' | 'waiting' | 'reveal' | 'transition' | 'results'>('intro');
   const [currentRound, setCurrentRound] = useState(1);
   const [timeLeft, setTimeLeft] = useState(20);
@@ -159,7 +182,7 @@ export const WhoSaidItScreen: React.FC<WhoSaidItScreenProps> = ({ onComplete, on
             </Card>
           </Animated.View>
           <View style={styles.playersGrid}>
-            {PLAYERS.map((player) => (
+            {activePlayers.map((player) => (
               <PlayerVoteCard
                 key={player.id}
                 name={player.name}
