@@ -43,15 +43,18 @@ const MOCK_EVENTS: EventDisplay[] = [
 ];
 
 // Format DB event for display
-const formatEvent = (event: DBEvent): EventDisplay => ({
-  id: event.id,
-  title: event.title,
-  date: new Date(event.date).toLocaleDateString('en-US', { weekday: 'short' }),
-  time: event.time,
-  venue: event.venue,
-  people: event.attendee_count || 0,
-  price: event.price,
-});
+const formatEvent = (event: DBEvent): EventDisplay => {
+  const eventDate = new Date(event.date);
+  return {
+    id: event.id,
+    title: event.title,
+    date: eventDate.toLocaleDateString('en-US', { weekday: 'short' }),
+    time: eventDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
+    venue: event.venue_name,
+    people: event.attendee_count || 0,
+    price: event.price,
+  };
+};
 
 const EventCard: React.FC<{ event: Event; onPress: () => void; delay: number }> = ({ event, onPress, delay }) => (
   <Animated.View entering={FadeInDown.delay(delay).duration(400)}>

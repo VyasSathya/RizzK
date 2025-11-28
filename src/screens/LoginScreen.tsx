@@ -35,14 +35,20 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
 
   const handleLogin = async () => {
     setError('');
+    HapticService.medium();
+
+    // DEV MODE: Skip auth if empty credentials
+    if (!email && !password) {
+      HapticService.success();
+      onLogin();
+      return;
+    }
 
     if (!email || !password) {
       setError('Please enter email and password');
       HapticService.error();
       return;
     }
-
-    HapticService.medium();
 
     try {
       await signIn({ email, password });

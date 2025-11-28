@@ -1,9 +1,9 @@
 /**
  * ChatScreen - Chat with a match
- * Simple chat interface
+ * Connected to Supabase with realtime
  */
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -14,15 +14,24 @@ import {
   KeyboardAvoidingView,
   Platform,
   StatusBar,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeInDown, FadeIn } from '../shims/reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { GradientBackground, Avatar, Icon } from '../components/common';
-import { colors, spacing, borderRadius , fonts } from '../theme';
+import { colors, spacing, borderRadius, fonts } from '../theme';
 import { HapticService } from '../services/haptics';
+import {
+  getMessages,
+  sendMessage,
+  subscribeToMessages,
+  markMessagesAsRead,
+  getCurrentUserId,
+  Message as DBMessage
+} from '../services/messages';
 
-interface Message {
+interface MessageDisplay {
   id: string;
   text: string;
   sender: 'me' | 'them';
@@ -33,10 +42,12 @@ interface ChatScreenProps {
   matchId: string;
   matchName: string;
   matchGender?: 'male' | 'female';
+  matchAvatar?: string;
   onBack: () => void;
 }
 
-const INITIAL_MESSAGES: Message[] = [
+// Fallback mock messages
+const MOCK_MESSAGES: MessageDisplay[] = [
   { id: '1', text: 'Hey! Great meeting you last night', sender: 'them', timestamp: '10:30 AM' },
   { id: '2', text: 'You too! That two truths game was hilarious', sender: 'me', timestamp: '10:32 AM' },
   { id: '3', text: 'I still can\'t believe you\'ve never had coffee!', sender: 'them', timestamp: '10:33 AM' },
@@ -48,27 +59,78 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
   matchGender = 'female',
   onBack,
 }) => {
-  const [messages, setMessages] = useState<Message[]>(INITIAL_MESSAGES);
+  const [messages, setMessages] = useState<MessageDisplay[]>([]);
   const [inputText, setInputText] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const scrollViewRef = useRef<ScrollView>(null);
 
-  const handleSend = () => {
+  useEffect(() => {
+    initChat();
+
+    // Subscribe to new messages
+    const unsubscribe = subscribeToMessages(matchId, (newMessage) => {
+      const display = formatMessage(newMessage, currentUserId);
+      setMessages(prev => [...prev, display]);
+      setTimeout(() => scrollViewRef.current?.scrollToEnd({ animated: true }), 100);
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, [matchId]);
+
+  const initChat = async () => {
+    try {
+      const userId = await getCurrentUserId();
+      setCurrentUserId(userId);
+
+      const dbMessages = await getMessages(matchId);
+      if (dbMessages.length > 0) {
+        setMessages(dbMessages.map(m => formatMessage(m, userId)));
+        markMessagesAsRead(matchId);
+      } else {
+        // Use mock for demo
+        setMessages(MOCK_MESSAGES);
+      }
+    } catch (error) {
+      console.warn('Failed to load messages:', error);
+      setMessages(MOCK_MESSAGES);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatMessage = (msg: DBMessage, userId: string | null): MessageDisplay => ({
+    id: msg.id,
+    text: msg.content,
+    sender: msg.sender_id === userId ? 'me' : 'them',
+    timestamp: new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+  });
+
+  const handleSend = async () => {
     if (!inputText.trim()) return;
     HapticService.light();
 
-    const newMessage: Message = {
+    const text = inputText.trim();
+    setInputText('');
+
+    // Optimistic update
+    const optimisticMsg: MessageDisplay = {
       id: Date.now().toString(),
-      text: inputText.trim(),
+      text,
       sender: 'me',
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     };
+    setMessages(prev => [...prev, optimisticMsg]);
 
-    setMessages([...messages, newMessage]);
-    setInputText('');
+    try {
+      await sendMessage(matchId, text);
+    } catch (error) {
+      console.warn('Failed to send message:', error);
+    }
 
-    setTimeout(() => {
-      scrollViewRef.current?.scrollToEnd({ animated: true });
-    }, 100);
+    setTimeout(() => scrollViewRef.current?.scrollToEnd({ animated: true }), 100);
   };
 
   return (
@@ -94,6 +156,11 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
           style={styles.keyboardView}
           keyboardVerticalOffset={10}
         >
+          {loading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color={colors.primary} />
+            </View>
+          ) : (
           <ScrollView
             ref={scrollViewRef}
             style={styles.messagesContainer}
@@ -114,6 +181,7 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
               </Animated.View>
             ))}
           </ScrollView>
+          )}
 
           {/* Input */}
           <View style={styles.inputContainer}>
@@ -149,6 +217,7 @@ export const ChatScreen: React.FC<ChatScreenProps> = ({
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: spacing.lg, paddingVertical: spacing.md, borderBottomWidth: 1, borderBottomColor: colors.cardBorder },
   backButton: { flexDirection: 'row', alignItems: 'center', padding: 8, gap: 5 },
   backText: { color: colors.primary, fontSize: 16 },

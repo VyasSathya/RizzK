@@ -10,14 +10,16 @@ export interface Event {
   title: string;
   description: string;
   date: string;
-  time: string;
-  venue: string;
-  address: string;
+  venue_name: string;
+  venue_address: string;
+  city: string;
   capacity: number;
-  attendee_count: number;
   price: number;
-  image_url?: string;
+  status: 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
   created_at: string;
+  updated_at: string;
+  // Computed
+  attendee_count?: number;
 }
 
 export interface EventAttendee {

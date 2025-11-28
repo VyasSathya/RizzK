@@ -1,22 +1,25 @@
 /**
  * EventDetailScreen - Event details and registration
- * Matches the HTML prototype event detail screen
+ * Connected to Supabase
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   StatusBar,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeInDown } from '../shims/reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { GradientBackground, Button, Card, Icon } from '../components/common';
-import { colors, spacing, borderRadius , fonts } from '../theme';
+import { colors, spacing, borderRadius, fonts } from '../theme';
 import { HapticService } from '../services/haptics';
+import { getEvent, registerForEvent, isUserRegistered, Event } from '../services/events';
+import { useAuth } from '../contexts/AuthContext';
 
 interface EventDetailScreenProps {
   eventId: string;
@@ -24,36 +27,105 @@ interface EventDetailScreenProps {
   onBack: () => void;
 }
 
+interface EventDisplay {
+  title: string;
+  date: string;
+  time: string;
+  venue: string;
+  address: string;
+  people: number;
+  price: number;
+  description: string;
+  includes: string[];
+}
+
+const DEFAULT_INCLUDES = ['Welcome drink', '7 interactive games', 'Personality matching', 'Private chat with matches'];
+
 export const EventDetailScreen: React.FC<EventDetailScreenProps> = ({
   eventId,
   onRegister,
   onBack,
 }) => {
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
+  const [isRegistered, setIsRegistered] = useState(false);
+  const [error, setError] = useState('');
+  const [event, setEvent] = useState<EventDisplay>({
+    title: 'Loading...',
+    date: '',
+    time: '',
+    venue: '',
+    address: '',
+    people: 0,
+    price: 0,
+    description: '',
+    includes: DEFAULT_INCLUDES,
+  });
 
-  // Mock event data
-  const event = {
-    title: 'Friday Night Games',
-    date: 'Friday, Dec 15',
-    time: '8:00 PM - 11:00 PM',
-    venue: 'The Lounge',
-    address: '123 Main St, Downtown',
-    people: 6,
-    price: 35,
-    description: 'Join us for an exciting night of games, laughter, and connections! Meet 5-7 personality-matched singles and play 7 fun games designed to break the ice and spark chemistry.',
-    includes: ['Welcome drink', '7 interactive games', 'Personality matching', 'Private chat with matches'],
+  useEffect(() => {
+    loadEvent();
+  }, [eventId]);
+
+  const loadEvent = async () => {
+    try {
+      const dbEvent = await getEvent(eventId);
+      if (dbEvent) {
+        const eventDate = new Date(dbEvent.date);
+        setEvent({
+          title: dbEvent.title,
+          date: eventDate.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' }),
+          time: eventDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
+          venue: dbEvent.venue_name,
+          address: dbEvent.venue_address,
+          people: dbEvent.capacity,
+          price: dbEvent.price,
+          description: dbEvent.description || 'Join us for an exciting night of games, laughter, and connections!',
+          includes: DEFAULT_INCLUDES,
+        });
+
+        // Check if user is already registered
+        const registered = await isUserRegistered(eventId);
+        setIsRegistered(registered);
+      }
+    } catch (err) {
+      console.warn('Failed to load event:', err);
+    } finally {
+      setPageLoading(false);
+    }
   };
 
   const handleRegister = async () => {
+    if (!user) {
+      setError('Please log in to register');
+      HapticService.error();
+      return;
+    }
+
+    setError('');
     HapticService.medium();
     setLoading(true);
-    // Simulate registration
-    setTimeout(() => {
-      setLoading(false);
+
+    try {
+      await registerForEvent(eventId);
       HapticService.success();
       onRegister();
-    }, 1500);
+    } catch (err: any) {
+      setError(err.message || 'Registration failed');
+      HapticService.error();
+      setLoading(false);
+    }
   };
+
+  if (pageLoading) {
+    return (
+      <GradientBackground>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
+      </GradientBackground>
+    );
+  }
 
   return (
     <GradientBackground>
@@ -129,12 +201,15 @@ export const EventDetailScreen: React.FC<EventDetailScreenProps> = ({
                 <Text style={styles.price}>\</Text>
               </View>
 
+              {/* Error */}
+              {error ? <Text style={styles.errorText}>{error}</Text> : null}
+
               {/* Buttons */}
               <Button
-                title="Register Now"
+                title={isRegistered ? "Already Registered ✓" : "Register Now"}
                 onPress={handleRegister}
                 variant="primary"
-                loading={loading}
+                disabled={loading || isRegistered}
                 haptic="medium"
               />
               <Button
@@ -153,6 +228,7 @@ export const EventDetailScreen: React.FC<EventDetailScreenProps> = ({
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   scrollContent: { padding: spacing.xl, paddingTop: 40, paddingBottom: 80 },
   card: { paddingVertical: 0, overflow: 'hidden' },
   headerGradient: { padding: 30, alignItems: 'center', marginHorizontal: -spacing.xl, marginTop: -spacing.xl },
@@ -171,6 +247,7 @@ const styles = StyleSheet.create({
   priceLabel: { fontSize: 16, color: colors.textSecondary },
   price: { fontSize: 32, fontWeight: '700', color: colors.primary },
   backButton: { marginTop: spacing.md },
+  errorText: { color: colors.error, fontSize: 14, textAlign: 'center', marginBottom: spacing.md },
 });
 
 export default EventDetailScreen;

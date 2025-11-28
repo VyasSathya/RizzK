@@ -1,6 +1,6 @@
 /**
  * PhotoUploadScreen - Upload profile photos
- * Matches the HTML prototype photo upload screen
+ * Connected to Supabase Storage
  */
 
 import React, { useState } from 'react';
@@ -11,15 +11,19 @@ import {
   TouchableOpacity,
   StatusBar,
   Alert,
+  Image,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeInDown } from '../shims/reanimated';
 import { GradientBackground, Button, Card } from '../components/common';
-import { colors, spacing, borderRadius , fonts } from '../theme';
+import { colors, spacing, borderRadius, fonts } from '../theme';
 import { HapticService } from '../services/haptics';
+import * as ImagePicker from 'expo-image-picker';
+import { uploadPhoto } from '../services/photos';
 
 interface PhotoUploadScreenProps {
-  onContinue: (photos: string[]) => void;
+  onContinue: () => void;
   onBack: () => void;
 }
 
@@ -30,16 +34,50 @@ export const PhotoUploadScreen: React.FC<PhotoUploadScreenProps> = ({
   onBack,
 }) => {
   const [photos, setPhotos] = useState<(string | null)[]>(Array(PHOTO_SLOTS).fill(null));
+  const [uploading, setUploading] = useState<number | null>(null);
 
-  const handlePhotoPress = (index: number) => {
+  const handlePhotoPress = async (index: number) => {
     HapticService.light();
-    // TODO: Implement actual photo picker
-    Alert.alert('Photo Upload', 'Photo picker would open here');
-    
-    // Simulate adding a photo
-    const newPhotos = [...photos];
-    newPhotos[index] = `photo_${index}`;
-    setPhotos(newPhotos);
+
+    // Request permission
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission needed', 'Please allow access to your photos');
+      return;
+    }
+
+    // Pick image
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+
+    if (result.canceled) return;
+
+    const uri = result.assets[0].uri;
+    setUploading(index);
+
+    try {
+      // Upload to Supabase
+      await uploadPhoto(uri, index === 0);
+
+      // Update local state
+      const newPhotos = [...photos];
+      newPhotos[index] = uri;
+      setPhotos(newPhotos);
+      HapticService.success();
+    } catch (error: any) {
+      console.warn('Upload failed:', error);
+      // Still show locally even if upload fails
+      const newPhotos = [...photos];
+      newPhotos[index] = uri;
+      setPhotos(newPhotos);
+      Alert.alert('Upload Issue', 'Photo saved locally but upload failed');
+    } finally {
+      setUploading(null);
+    }
   };
 
   const handleContinue = () => {
@@ -50,7 +88,7 @@ export const PhotoUploadScreen: React.FC<PhotoUploadScreenProps> = ({
       return;
     }
     HapticService.success();
-    onContinue(uploadedPhotos);
+    onContinue();
   };
 
   const uploadedCount = photos.filter(p => p !== null).length;
@@ -81,9 +119,12 @@ export const PhotoUploadScreen: React.FC<PhotoUploadScreenProps> = ({
                     ]}
                     onPress={() => handlePhotoPress(index)}
                     activeOpacity={0.7}
+                    disabled={uploading !== null}
                   >
-                    {photo ? (
-                      <Text style={styles.checkmark}>✓</Text>
+                    {uploading === index ? (
+                      <ActivityIndicator color={colors.primary} />
+                    ) : photo ? (
+                      <Image source={{ uri: photo }} style={styles.photoImage} />
                     ) : (
                       <>
                         <Text style={styles.plusIcon}>+</Text>
@@ -136,8 +177,9 @@ const styles = StyleSheet.create({
   title: { fontSize: 28, fontFamily: fonts.headingBold, color: colors.text, marginBottom: 10 },
   subtitle: { fontSize: 15, color: colors.textSecondary, textAlign: 'center' },
   photoGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, justifyContent: 'center', marginBottom: 20 },
-  photoBox: { width: '30%', aspectRatio: 1, backgroundColor: colors.glassBg, borderWidth: 2, borderStyle: 'dashed', borderColor: colors.cardBorder, borderRadius: borderRadius.md, alignItems: 'center', justifyContent: 'center' },
+  photoBox: { width: '30%', aspectRatio: 1, backgroundColor: colors.glassBg, borderWidth: 2, borderStyle: 'dashed', borderColor: colors.cardBorder, borderRadius: borderRadius.md, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
   photoBoxFilled: { borderStyle: 'solid', borderColor: colors.primary, backgroundColor: 'rgba(255, 20, 147, 0.2)' },
+  photoImage: { width: '100%', height: '100%', borderRadius: borderRadius.md - 2 },
   plusIcon: { fontSize: 30, color: colors.textTertiary },
   addText: { fontSize: 12, color: colors.textTertiary, marginTop: 4 },
   checkmark: { fontSize: 30, color: colors.primary },
