@@ -199,26 +199,28 @@ export const EventDetailScreen: React.FC<EventDetailScreenProps> = ({
               {/* Price */}
               <View style={styles.priceContainer}>
                 <Text style={styles.priceLabel}>Price</Text>
-                <Text style={styles.price}>\</Text>
+                <Text style={styles.price}>${event.price}</Text>
               </View>
 
               {/* Error */}
               {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
               {/* Buttons */}
-              <Button
-                title={isRegistered ? "Already Registered ✓" : "Register Now"}
-                onPress={handleRegister}
-                variant="primary"
-                disabled={loading || isRegistered}
-                haptic="medium"
-              />
-              <Button
-                title="Back to Events"
-                onPress={onBack}
-                variant="secondary"
-                style={styles.backButton}
-              />
+              <View style={styles.buttonContainer}>
+                <Button
+                  title={isRegistered ? "Already Registered ✓" : "Register Now"}
+                  onPress={handleRegister}
+                  variant="primary"
+                  disabled={loading || isRegistered}
+                  haptic="medium"
+                />
+                <Button
+                  title="Back to Events"
+                  onPress={onBack}
+                  variant="secondary"
+                  style={styles.backButton}
+                />
+              </View>
             </Card>
           </Animated.View>
         </ScrollView>
@@ -230,7 +232,7 @@ export const EventDetailScreen: React.FC<EventDetailScreenProps> = ({
 const styles = StyleSheet.create({
   container: { flex: 1 },
   loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  scrollContent: { padding: spacing.xl, paddingTop: 40, paddingBottom: 80 },
+  scrollContent: { padding: spacing.lg, paddingTop: spacing.md, paddingBottom: 120 },
   card: { paddingVertical: 0, overflow: 'hidden' },
   headerGradient: { padding: 30, alignItems: 'center', marginHorizontal: -spacing.xl, marginTop: -spacing.xl },
   headerTitle: { fontSize: 24, fontFamily: fonts.headingBold, color: '#fff', marginTop: 10 },
@@ -244,9 +246,10 @@ const styles = StyleSheet.create({
   description: { fontSize: 15, color: colors.textSecondary, lineHeight: 24 },
   includeRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 8 },
   includeItem: { fontSize: 15, color: colors.textSecondary },
-  priceContainer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 25, paddingTop: 25, borderTopWidth: 1, borderTopColor: colors.cardBorder, marginBottom: 25 },
+  priceContainer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 25, paddingTop: 25, borderTopWidth: 1, borderTopColor: colors.cardBorder, marginBottom: 20 },
   priceLabel: { fontSize: 16, color: colors.textSecondary },
   price: { fontSize: 32, fontWeight: '700', color: colors.primary },
+  buttonContainer: { paddingBottom: spacing.lg },
   backButton: { marginTop: spacing.md },
   errorText: { color: colors.error, fontSize: 14, textAlign: 'center', marginBottom: spacing.md },
 });
