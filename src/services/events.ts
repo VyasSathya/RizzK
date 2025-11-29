@@ -35,9 +35,9 @@ export interface EventAttendee {
  */
 export async function getEvents(): Promise<Event[]> {
   const { data, error } = await supabase
-    .from('events')
+    .from('rizzk_events')
     .select('*')
-    .gte('date', new Date().toISOString().split('T')[0])
+    .gte('date', new Date().toISOString())
     .order('date', { ascending: true });
 
   if (error) throw error;
@@ -49,7 +49,7 @@ export async function getEvents(): Promise<Event[]> {
  */
 export async function getEvent(id: string): Promise<Event | null> {
   const { data, error } = await supabase
-    .from('events')
+    .from('rizzk_events')
     .select('*')
     .eq('id', id)
     .single();

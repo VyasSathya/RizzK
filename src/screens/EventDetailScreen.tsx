@@ -131,7 +131,7 @@ export const EventDetailScreen: React.FC<EventDetailScreenProps> = ({
   return (
     <GradientBackground>
       <StatusBar barStyle="light-content" />
-      <SafeAreaView style={styles.container} edges={['bottom', 'left', 'right']}>
+      <SafeAreaView style={styles.container} edges={['top', 'bottom', 'left', 'right']}>
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}

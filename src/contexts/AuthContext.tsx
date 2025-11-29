@@ -16,7 +16,7 @@ interface AuthContextType {
 
 // Dev mode user for testing without real auth
 const DEV_USER: AuthUser = {
-  id: '00000000-0000-0000-0000-000000000001',
+  id: 'de700000-0000-0000-0000-000000000001',
   email: 'dev@rizzk.test',
   fullName: 'Dev Tester',
   age: 25,
