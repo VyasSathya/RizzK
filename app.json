@@ -19,7 +19,8 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.vyas.sathya.rizzkmobile"
     },
     "web": {
       "favicon": "./assets/favicon.png",
@@ -30,6 +31,11 @@
     ],
     "packagerOpts": {
       "port": 5555
+    },
+    "extra": {
+      "eas": {
+        "projectId": "40c97aba-e148-442d-9efa-2446a06b0ac1"
+      }
     }
   }
 }
