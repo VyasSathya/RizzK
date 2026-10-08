@@ -1,160 +1,56 @@
-# RizzK Mobile
+# RizzK
 
-**The dating app based on personality-matched game nights.**
+An Expo and React Native dating-app prototype centered on personality quizzes and shared game nights. The source includes account/onboarding screens, event and lobby flows, seven game-screen implementations, match selection, and chat UI.
 
-> Take the Rizk. Meet through games, not swipes.
+## Explore the source
 
----
+| Area | Source |
+| --- | --- |
+| Application entry | [App.tsx](App.tsx) |
+| Screens | [src/screens/](src/screens/) |
+| Seven game screens | [src/screens/games/](src/screens/games/) |
+| Game-session coordination | [useGameSession](src/hooks/useGameSession.ts), [gameSession service](src/services/gameSession.ts) |
+| Accounts and backend calls | [AuthContext](src/contexts/AuthContext.tsx), [services](src/services/) |
+| Types and visual system | [types](src/types/), [theme](src/theme/) |
+| Multiplayer schema change | [004_game_multiplayer.sql](supabase/migrations/004_game_multiplayer.sql) |
 
-## 🎯 Project Overview
+The game screens cover Spark, Dare or Drink, Hot Take, Never Have I Ever, Battle of the Sexes, Who Said It?, and Two Truths and a Lie. Their presence describes the implementation surface; it does not establish that a live multiplayer event, matching algorithm, or chat service is operating.
 
-RizzK is a React Native mobile app built with Expo that reimagines dating through interactive multiplayer games. Users take a personality quiz, register for events, get matched with 5-7 compatible people, and meet at a venue to play 7 games together before selecting who they want to match with.
+## Development setup
 
-### **Key Features**
-- 🎮 7 interactive multiplayer games
-- 🎨 Neon Pink theme with sleek design
-- 📳 Haptic feedback (no sound effects)
-- 🔄 Real-time multiplayer coordination
-- 💬 In-app chat with matches
-- 🎯 Personality-based matching
+Install Node.js and npm, then install the declared dependencies:
 
----
-
-## 📁 Project Structure
-
-```
-rizzk-mobile/
-├── src/
-│   ├── components/       # Reusable UI components
-│   ├── screens/          # App screens
-│   ├── navigation/       # Navigation setup
-│   ├── services/         # Supabase, haptics, etc.
-│   ├── hooks/            # Custom React hooks
-│   ├── theme/            # Colors, fonts, spacing
-│   ├── types/            # TypeScript types
-│   ├── utils/            # Helper functions
-│   └── constants/        # App constants
-├── assets/               # Fonts, images
-└── App.tsx               # Entry point
-```
-
----
-
-## 🚀 Getting Started
-
-### **Prerequisites**
-- Node.js 18+
-- npm or yarn
-- Expo CLI
-- iOS Simulator (Mac) or Android Emulator
-
-### **Installation**
-
-```bash
-# Install dependencies
+```sh
 npm install
-
-# Start development server
-npx expo start
-
-# Run on iOS
-npx expo start --ios
-
-# Run on Android
-npx expo start --android
-
-# Run on web
-npx expo start --web
 ```
 
----
+Use the included [.env.example](.env.example) as a reference and configure your own compatible Supabase project through an untracked `.env` file:
 
-## 🎨 Design System
-
-### **Colors**
-- Background: `#000000` (black)
-- Primary: `#ff1493` (hot pink)
-- Female gradient: `#ff1493` → `#ff69b4`
-- Male gradient: `#00d4ff` → `#0096ff`
-
-### **Fonts**
-- Headings: Cinzel Bold
-- Body: Raleway Regular
-
-### **Haptic Patterns**
-- **Light**: Button taps, transitions
-- **Medium**: Votes, confirmations
-- **Heavy**: Errors, warnings
-- **Success**: Correct answers, matches
-- **Error**: Wrong answers, failures
-
----
-
-## 📚 Reference Files
-
-Located in `../Players/`:
-- `rizzk-complete-prototype.html` - Complete UI/UX reference
-- `RIZZK-REACT-NATIVE-IMPLEMENTATION-GUIDE.md` - Implementation guide
-- `RIZZK-PROJECT-PLAN.md` - Project plan
-
----
-
-## 🔧 Configuration
-
-### **Environment Variables**
-Create a `.env` file:
-
-```
-EXPO_PUBLIC_SUPABASE_URL=your_supabase_url
-EXPO_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+```text
+EXPO_PUBLIC_SUPABASE_URL=your_project_url
+EXPO_PUBLIC_SUPABASE_ANON_KEY=your_public_anon_key
 ```
 
----
+[src/services/supabase.ts](src/services/supabase.ts) reads these variables and has historical fallback project identifiers. The public anon key is a client identifier, not a server credential. The checkout includes a multiplayer migration; it is not documented as a complete fresh-backend bootstrap. Matching tables, storage, realtime subscriptions, and authentication still need provisioning and validation for a fresh environment.
 
-## 🎮 The 7 Games
+Start the Expo development server on the package's configured port, **5555**:
 
-1. **Spark** - Vote on who you'd want to be stranded with
-2. **Dare or Drink** - Choose dare or drink for spicy prompts
-3. **Hot Take** - Vote on controversial opinions
-4. **Never Have I Ever** - Reveal your experiences
-5. **Battle of the Sexes** - Team trivia competition
-6. **Who Said It?** - Match quotes to players
-7. **Two Truths and a Lie** - Guess the lie
+```sh
+npm start
+# Platform-specific script declarations
+npm run android
+npm run ios
+npm run web
+```
 
----
+Use a compatible Android device/emulator or an iOS simulator on macOS. The project includes a custom development-client dependency; platform compatibility and the choice of Expo Go versus a development build have not been verified in this documentation review.
 
-## 📱 Tech Stack
+## Prototype status
 
-- **Framework**: React Native + Expo
-- **Language**: TypeScript
-- **Navigation**: React Navigation
-- **Backend**: Supabase
-- **Haptics**: expo-haptics
-- **Animations**: react-native-reanimated
-- **UI**: Custom components with LinearGradient
+The repository goes beyond its original initial-setup checklist: navigation-related application code, screens, services, and game-session source are present. End-to-end backend behavior, matching quality, deployed event operation, and current device builds remain unverified here. No passing tests, app-store release, or genuine gameplay screenshots are claimed.
 
----
+The visual source uses a dark/pink theme, Cinzel/Raleway font packages, and Expo haptics. Preserve the actual source and asset provenance when preparing a demo.
 
-## 🚧 Development Status
+## License
 
-**Current Phase**: Initial Setup ✅
-- [x] Project created
-- [x] Dependencies installed
-- [x] Folder structure created
-- [x] Theme configured
-- [x] Haptics service created
-- [ ] Navigation setup
-- [ ] Screens implementation
-- [ ] Games implementation
-- [ ] Supabase integration
-
----
-
-## 📝 License
-
-Proprietary - All rights reserved
-
----
-
-**Built with ❤️ for modern dating**
-
+Proprietary — all rights reserved. This preserves the repository's existing licensing statement; public visibility does not change it into a permissively licensed project.
